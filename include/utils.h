@@ -1,6 +1,8 @@
 #ifndef CMM_UTILS_H
 #define CMM_UTILS_H
 
+#include <iostream>
+
 // 位置类, 用于描述 Token 所在源文件的位置信息, 便于显示出错信息
 class Position {
 public:
@@ -14,6 +16,11 @@ public:
 
     int length() const { return length_; }
     void set_length(int length) { length_ = length; }
+
+    friend std::ostream &operator << (std::ostream &os, const Position &position) {
+        std::cout << "Line " << position.row_ << " Col " << position.col_;
+        return os;
+    }
 
 private:
     int row_;      // 行
