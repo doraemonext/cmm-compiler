@@ -1,14 +1,18 @@
 #include <iostream>
+#include <string>
 #include "include/token.h"
+#include "include/lexer.h"
+#include "include/utils.h"
 
 using namespace std;
 
 int main() {
-    Position pos(1, 2, 3);
-    Token token(Token::Type::kIdentity, "123", pos);
-    token.set_content("new content");
-    cout << token.type_name() << endl;
-    cout << token.content() << endl;
-    cout << token.position() << endl;
+    Lexer lexer("aint\nbbt");
+    lexer.match('a');
+    lexer.match('i');
+    lexer.match('n');
+    lexer.match('t');
+    lexer.match('b');
+    lexer.match('c');
     return 0;
 }

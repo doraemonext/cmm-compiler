@@ -53,7 +53,7 @@ public:
     };
 
 public:
-    Token(const Type &type, const std::string &content, const Position &position) :
+    Token(const Type &type, const std::string &content, const TokenPosition &position) :
             type_(type), content_(content), position_(position) { }
 
     static const char *token_type_name(const Type &type) {
@@ -107,13 +107,13 @@ public:
     std::string content() const { return content_; }
     void set_content(const std::string &content) { content_ = content; }
 
-    Position position() const { return position_; }
-    void set_position(const Position &position) { position_ = position; }
+    TokenPosition position() const { return position_; }
+    void set_position(const TokenPosition &position) { position_ = position; }
 
 private:
     Type type_;             // Token 类型
     std::string content_;   // Token 内容
-    Position position_;     // Token 所处位置
+    TokenPosition position_;     // Token 所处位置
 };
 
 #endif //CMM_TOKEN_H
