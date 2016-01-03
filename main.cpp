@@ -7,12 +7,12 @@
 using namespace std;
 
 int main() {
-    Lexer lexer("aint\nbbt");
-    lexer.match('a');
-    lexer.match('i');
-    lexer.match('n');
-    lexer.match('t');
-    lexer.match('b');
-    lexer.match('c');
+    Lexer lexer("int a;\n   int b, c = 10;\n while (c >= 15 + 2) { b = b + 1; };\n");
+    Token token = lexer.next_token();
+    while (token.type() != Token::Type::kEOF) {
+        std::cout << token << std::endl;
+        token = lexer.next_token();
+    }
+
     return 0;
 }

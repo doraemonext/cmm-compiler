@@ -7,15 +7,15 @@
 #include "utils.h"
 
 // 词法解析器字符不匹配异常
-class lexer_char_mismatch: public std::exception {
+class lexer_exception: public std::exception {
 public:
-    explicit lexer_char_mismatch(const LexerPosition &position, const std::string &msg) : position_(position), msg_(msg) {
+    explicit lexer_exception(const LexerPosition &position, const std::string &msg) : position_(position), msg_(msg) {
         std::stringstream buffer;
-        buffer << "Row " << position_.row() << " Col " << position_.col() << ": ";
+        buffer << "第 " << position_.row() << " 行 第 " << position_.col() << " 列: ";
         msg_ = buffer.str() + msg_;
     }
 
-    virtual ~lexer_char_mismatch() throw () { }
+    virtual ~lexer_exception() throw () { }
 
     virtual const char *what() const throw() { return msg_.c_str(); }
 

@@ -49,6 +49,8 @@ class TokenPosition: public Position {
 public:
     TokenPosition(int row, int col, int length) : Position(row, col), length_(length) { }
 
+    TokenPosition(Position position, int length): Position(position), length_(length) { }
+
     int length() const { return length_; }
     void set_length(int length) { length_ = length; }
 
@@ -88,7 +90,7 @@ public:
     static bool is_integer(const std::string &str) {
         try {
             std::string::size_type pos;
-            std::cout << std::stoi(str, &pos) << std::endl;
+            std::stoi(str, &pos);
             if (pos < str.length()) {
                 throw std::invalid_argument("invalid int argument");
             }
