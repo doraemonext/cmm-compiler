@@ -92,7 +92,7 @@ public:
     }
 
     friend std::ostream &operator << (std::ostream &os, const Token &token) {
-        std::cout << "第 " << token.position().row() << " 行 第 " << token.position().col() << " 列:<\"" << token.type_name() << "\", \"" << token.content() << "\">";
+        std::cout << "第 " << token.position().row() << " 行 第 " << token.position().col() << " 列: <\"" << token.type_name() << "\", \"" << token.content() << "\", " << token.position().length() << ">";
         return os;
     }
 
