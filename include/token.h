@@ -99,6 +99,8 @@ public:
         }
     }
 
+    const char *type_name() const { return token_type_name(type_); }
+
     Type type() const { return type_; }
     void set_type(Type type) { type_ = type; }
 
