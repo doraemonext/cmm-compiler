@@ -119,7 +119,7 @@ public:
     void set_position(const TokenPosition &position) { position_ = position; }
 
     friend std::ostream &operator << (std::ostream &os, const Token &token) {
-        std::cout << "第 " << token.position().row() << " 行 第 " << token.position().col() << " 列:\t\t<\"" << token.type_name() << "\", \"" << token.content() << "\">";
+        std::cout << "第 " << token.position().row() << " 行 第 " << token.position().col() << " 列:<\"" << token.type_name() << "\", \"" << token.content() << "\">";
         return os;
     }
 

@@ -226,9 +226,11 @@ private:
         consume(false);
         if (current_ == '/') {
             consume();
+            in_row_comment_ = true;
             return Token(Token::Type::kLineComment, TokenPosition(position_, 2));
         } else if (current_ == '*') {
             consume();
+            in_block_comment_ = true;
             return Token(Token::Type::kLeftBlockComment, TokenPosition(position_, 2));
         } else {
             return Token(Token::Type::kDivide, TokenPosition(position_, 1));
@@ -293,7 +295,7 @@ private:
         } else if (Recognition::is_id(res)) {
             return Token(Token::Type::kIdentity, res, TokenPosition(position_, length));
         } else {
-            buffer.clear();
+            buffer.str("");
             buffer << "不正确的标识符: \"" << res << "\"";
             throw lexer_exception(position_, buffer.str());
         }
@@ -314,7 +316,7 @@ private:
         } else if (Recognition::is_real(res)) {
             return Token(Token::Type::kRealLiteral, res, TokenPosition(position_, length));
         } else {
-            buffer.clear();
+            buffer.str("");
             buffer << "不正确的数字: \"" << res << "\"";
             throw lexer_exception(position_, buffer.str());
         }
