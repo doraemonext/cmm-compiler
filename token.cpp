@@ -1,6 +1,6 @@
 #include "include/token.h"
 
-const char *Token::token_type_name(const Type &type) {
+const char *Token::token_type_name(const LexerType &type) {
     switch (type) {
         case kEOF: return "EOF";
         case kRead: return "read";
