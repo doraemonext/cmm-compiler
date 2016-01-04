@@ -39,6 +39,6 @@ const char *Token::token_type_name(const Type &type) {
         case kIntegerLiteral: return "integer_literal";
         case kRealLiteral: return "real_literal";
         case kWhiteSpace: return "white_space";
-        default: throw std::invalid_argument("received invalid type value");
+        default: throw std::invalid_argument("received invalid type_ value");
     }
 }

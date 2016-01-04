@@ -3,6 +3,7 @@
 #include "include/token.h"
 #include "include/lexer.h"
 #include "include/utils.h"
+#include "include/symbol.h"
 
 using namespace std;
 
@@ -11,12 +12,15 @@ int main() {
     try {
         Token token = lexer.next_token();
         while (token.type() != Token::Type::kEOF) {
-            std::cout << token << std::endl;
+            // std::cout << token << std::endl;
             token = lexer.next_token();
         }
     } catch (const lexer_exception &e) {
-        std::cout << e.what() << std::endl;
+        // std::cout << e.what() << std::endl;
     }
+
+    Symbol *symbol = new Symbol("value_a", Symbol::Type::kInt);
+    symbol->print();
 
     return 0;
 }
