@@ -1,44 +1,44 @@
 #include "include/token.h"
 
-const char *Token::token_type_name(const LexerType &type) {
+const char *Token::token_type_name(const Type &type) {
     switch (type) {
-        case LexerType::kEOF: return "EOF";
-        case LexerType::kRead: return "read";
-        case LexerType::kWrite: return "write";
-        case LexerType::kWhile: return "while";
-        case LexerType::kIf: return "if";
-        case LexerType::kElse: return "else";
-        case LexerType::kInt: return "int";
-        case LexerType::kReal: return "real";
-        case LexerType::kVoid: return "void";
-        case LexerType::kFunc: return "func";
-        case LexerType::kReturn: return "return";
-        case LexerType::kLeftParen: return "(";
-        case LexerType::kRightParen: return ")";
-        case LexerType::kLeftBracket: return "[";
-        case LexerType::kRightBracket: return "]";
-        case LexerType::kLeftBrace: return "{";
-        case LexerType::kRightBrace: return "}";
-        case LexerType::kSemicolon: return ";";
-        case LexerType::kComma: return ",";
-        case LexerType::kAssign: return "=";
-        case LexerType::kPlus: return "+";
-        case LexerType::kMinus: return "-";
-        case LexerType::kTimes: return "*";
-        case LexerType::kDivide: return "/";
-        case LexerType::kLT: return "<";
-        case LexerType::kLTE: return "<=";
-        case LexerType::kGT: return ">";
-        case LexerType::kGTE: return ">=";
-        case LexerType::kEqual: return "==";
-        case LexerType::kNotEqual: return "<>";
-        case LexerType::kLineComment: return "//";
-        case LexerType::kLeftBlockComment: return "/*";
-        case LexerType::kRightBlockComment: return "*/";
-        case LexerType::kIdentity: return "identity";
-        case LexerType::kIntegerLiteral: return "integer_literal";
-        case LexerType::kRealLiteral: return "real_literal";
-        case LexerType::kWhiteSpace: return "white_space";
+        case Type::kEOF: return "EOF";
+        case Type::kRead: return "read";
+        case Type::kWrite: return "write";
+        case Type::kWhile: return "while";
+        case Type::kIf: return "if";
+        case Type::kElse: return "else";
+        case Type::kInt: return "int";
+        case Type::kReal: return "real";
+        case Type::kVoid: return "void";
+        case Type::kFunc: return "func";
+        case Type::kReturn: return "return";
+        case Type::kLeftParen: return "(";
+        case Type::kRightParen: return ")";
+        case Type::kLeftBracket: return "[";
+        case Type::kRightBracket: return "]";
+        case Type::kLeftBrace: return "{";
+        case Type::kRightBrace: return "}";
+        case Type::kSemicolon: return ";";
+        case Type::kComma: return ",";
+        case Type::kAssign: return "=";
+        case Type::kPlus: return "+";
+        case Type::kMinus: return "-";
+        case Type::kTimes: return "*";
+        case Type::kDivide: return "/";
+        case Type::kLT: return "<";
+        case Type::kLTE: return "<=";
+        case Type::kGT: return ">";
+        case Type::kGTE: return ">=";
+        case Type::kEqual: return "==";
+        case Type::kNotEqual: return "<>";
+        case Type::kLineComment: return "//";
+        case Type::kLeftBlockComment: return "/*";
+        case Type::kRightBlockComment: return "*/";
+        case Type::kIdentity: return "identity";
+        case Type::kIntegerLiteral: return "integer_literal";
+        case Type::kRealLiteral: return "real_literal";
+        case Type::kWhiteSpace: return "white_space";
         default: throw std::invalid_argument("received invalid type_ value");
     }
 }

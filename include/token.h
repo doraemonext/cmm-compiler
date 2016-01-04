@@ -8,7 +8,7 @@
 class Token {
 public:
     // Token 枚举类型
-    enum class LexerType {
+    enum class Type {
         kEOF = 0,            // 文件结束
 
         kRead,               // read
@@ -54,6 +54,7 @@ public:
         kNone,               // 空类型
     };
 
+    // 语法解析类型
     enum class ParserType {
         kProgram = 0,
 
@@ -118,23 +119,23 @@ public:
     };
 
 public:
-    Token() : type_(LexerType::kNone), content_(""), position_(TokenPosition()) { }
+    Token() : type_(Type::kNone), content_(""), position_(TokenPosition()) { }
 
-    Token(const LexerType &type, const std::string &content, const TokenPosition &position) : type_(type), content_(content), position_(position) { }
+    Token(const Type &type, const std::string &content, const TokenPosition &position) : type_(type), content_(content), position_(position) { }
 
-    Token(const LexerType &type, const TokenPosition &position) : type_(type), content_(""), position_(position) { }
+    Token(const Type &type, const TokenPosition &position) : type_(type), content_(""), position_(position) { }
 
-    static const char *token_type_name(const LexerType &type);
+    static const char *token_type_name(const Type &type);
 
     const char *type_name() const {
         return token_type_name(type_);
     }
 
-    LexerType type() const {
+    Type type() const {
         return type_;
     }
 
-    void set_type(LexerType type) {
+    void set_type(Type type) {
         type_ = type;
     }
 
@@ -164,7 +165,7 @@ public:
     }
 
 private:
-    LexerType type_;             // Token 类型
+    Type type_;             // Token 类型
     std::string content_;   // Token 内容
     TokenPosition position_;     // Token 所处位置
 };

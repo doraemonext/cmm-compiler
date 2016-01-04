@@ -16,7 +16,7 @@ int main() {
     Parser parser(lexer, 2);
     try {
         Token token = lexer.next_token();
-        while (token.type() != Token::LexerType::kEOF) {
+        while (token.type() != Token::Type::kEOF) {
             std::cout << token << std::endl;
             token = lexer.next_token();
         }

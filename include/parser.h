@@ -31,7 +31,7 @@ public:
         return lookahead_[(index_ + step - 1) % total_];
     }
 
-    Token match(const Token::LexerType &x) {
+    Token match(const Token::Type &x) {
         Token forward_token = get_forward(1);
         if (forward_token.type() == x) {
             consume();
