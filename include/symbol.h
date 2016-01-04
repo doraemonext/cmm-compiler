@@ -7,7 +7,7 @@
 
 class Symbol {
 public:
-    enum Type {
+    enum class Type {
         kNone = 0,
         kMethod,
         kInt,

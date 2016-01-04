@@ -3,8 +3,6 @@
 // 测试函数
 void Symbol::print() const {
     std::cout << "Name: " << name_ << std::endl;
-    std::cout << "Type: " << type_ << std::endl;
-    std::cout << "Ret Type: " << ret_type_ << std::endl;
     if (type_ == Symbol::Type::kInt) {
         std::cout << "Int Value: " << value_.int_value << std::endl;
     } else if (type_ == Symbol::Type::kIntArray) {

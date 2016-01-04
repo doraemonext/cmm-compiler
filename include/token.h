@@ -8,7 +8,7 @@
 class Token {
 public:
     // Token 枚举类型
-    enum LexerType {
+    enum class LexerType {
         kEOF = 0,            // 文件结束
 
         kRead,               // read
@@ -52,6 +52,69 @@ public:
         kWhiteSpace,         // 空白字符类型
 
         kNone,               // 空类型
+    };
+
+    enum class ParserType {
+        kProgram = 0,
+
+        kStatements,
+        kFunctions,
+
+        kStatement,
+        kFunction,
+
+        kIfStatement,
+        kWhileStatement,
+        kReadStatement,
+        kWriteStatement,
+        kAssignStatement,
+        kDeclareStatement,
+        kReturnStatement,
+
+        kDeclareKeyword,
+        kCondition,
+        kExpression,
+        kTerm,
+        kComparisonOp,
+        kAddOp,
+        kMulOp,
+        kFactor,
+        kArray,
+
+        kFunc,
+        kReturn,
+        kRead,
+        kWrite,
+        kWhile,
+        kIf,
+        kElse,
+        kInt,
+        kReal,
+        kVoid,
+        kSemicolon,
+        kLeftParen,
+        kRightParen,
+        kLeftBracket,
+        kRightBracket,
+        kLeftBrace,
+        kRightBrace,
+        kComma,
+        kAssign,
+        kPlus,
+        kMinus,
+        kTimes,
+        kDivide,
+        kLT,
+        kLTE,
+        kGT,
+        kGTE,
+        kEqual,
+        kNotEqual,
+        kIdentity,
+        kIntegerLiteral,
+        kRealLiteral,
+
+        kNone,
     };
 
 public:
