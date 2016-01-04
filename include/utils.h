@@ -49,6 +49,9 @@ private:
 // 词法解析器位置类
 class LexerPosition: public Position { };
 
+// 语法解析器位置类
+class ParserPosition: public Position { };
+
 // Token 位置类, 用于描述 Token 所在源文件的位置信息, 便于显示出错信息
 class TokenPosition: public Position {
 public:

@@ -3,7 +3,7 @@ program              :        (statements functions)+ ;
 statements           :        statement* ;
 functions            :        function* ;
 
-statement            :        if_statement | while_statement | read_statement | write_statement | assign_statement | declare_statement | return_statement ;
+statement            :        if_statement | while_statement | read_statement | write_statement | assign_statement | declare_statement | return_statement | SEMICOLON ;
 function             :        FUNC declare_keyword ID LPAREN (declare_keyword ID (COMMA declare_keyword ID)*)? RPAREN LBRACE statements RBRACE ;
 
 if_statement         :        IF LPAREN condition RPAREN LBRACE statements RBRACE (ELSE LBRACE statements RBRACE)? ;

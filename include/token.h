@@ -122,8 +122,12 @@ public:
     }
 
     friend std::ostream &operator << (std::ostream &os, const Token &token) {
-        std::cout << "第 " << token.position().row() << " 行 第 " << token.position().col() << " 列: <\"" << token.type_name() << "\", \"" << token.content() << "\", " << token.position().length() << ">";
+        os << token.content();
         return os;
+    }
+
+    void print() const {
+        std::cout << "第 " << position().row() << " 行 第 " << position().col() << " 列: <\"" << type_name() << "\", \"" << content() << "\", " << position().length() << ">";
     }
 
 private:

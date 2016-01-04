@@ -39,6 +39,28 @@ const char *Token::token_type_name(const Type &type) {
         case Type::kIntegerLiteral: return "integer_literal";
         case Type::kRealLiteral: return "real_literal";
         case Type::kWhiteSpace: return "white_space";
-        default: throw std::invalid_argument("received invalid type_ value");
+        case Type::kProgram: return "program";
+        case Type::kStatements: return "statements";
+        case Type::kFunctions: return "functions";
+        case Type::kStatement: return "statement";
+        case Type::kFunction: return "function";
+        case Type::kIfStatement: return "if_statement";
+        case Type::kWhileStatement: return "while_statement";
+        case Type::kReadStatement: return "read_statement";
+        case Type::kWriteStatement: return "write_statement";
+        case Type::kAssignStatement: return "assign_statement";
+        case Type::kDeclareStatement: return "declare_statement";
+        case Type::kReturnStatement: return "return_statement";
+        case Type::kDeclareKeyword: return "declare_keyword";
+        case Type::kCondition: return "condition";
+        case Type::kExpression: return "expression";
+        case Type::kTerm: return "term";
+        case Type::kComparisonOp: return "comparison_op";
+        case Type::kAddOp: return "add_op";
+        case Type::kMulOp: return "mul_op";
+        case Type::kFactor: return "factor";
+        case Type::kArray: return "array";
+        case Type::kNone: return "none";
+        default: throw std::invalid_argument("received invalid type value");
     }
 }
