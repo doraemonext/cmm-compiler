@@ -4,6 +4,7 @@
 #include <vector>
 #include "lexer.h"
 #include "token.h"
+#include "ast.h"
 #include "exceptions.h"
 
 class Parser {
@@ -13,10 +14,12 @@ public:
         lookahead_.resize(5);
         total_ = total;
         index_ = 0;
-
         for (int i = 0; i < total_; i++) {
             consume();
         }
+
+        root = new AbstractSyntaxNode(get_forward(1));
+        current = root;
     }
 
     void consume() {
@@ -46,6 +49,8 @@ private:
     std::vector<Token> lookahead_;
     int total_;
     int index_;
+    AbstractSyntaxNode *root;
+    AbstractSyntaxNode *current;
 };
 
 #endif //CMM_PARSER_H

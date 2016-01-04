@@ -13,7 +13,6 @@ using namespace std;
 int main() {
     Lexer lexer("int a;\n   int b, c = 10;\n while (c >= 15 + 2) /* aaa_ { b = b + 1; };\nfunc int abc(int a, int b) { read(c); }");
     Parser parser(lexer, 2);
-    parser.match(Token::Type::kIdentity);
 //    try {
 //        Token token = lexer.next_token();
 //        while (token.type() != Token::Type::kEOF) {
