@@ -49,9 +49,10 @@ public:
     }
 
     void print() const {
+        std::cout << "--------------------------" << std::endl;
         std::cout << "Level: " << level() << std::endl;
+        std::cout << "--------------------------" << std::endl;
         for (std::map<std::string, Symbol>::const_iterator it = symbols_.begin(); it != symbols_.end(); ++it) {
-            std::cout << "Name: " << it->first << " \nSymbol:\n";
             it->second.print();
             std::cout << std::endl;
         }
@@ -66,6 +67,39 @@ private:
     int level_;
     ScopeNode *enclosing_scope_;
     std::list<ScopeNode *> children_;
+};
+
+class ScopeTree {
+public:
+    ScopeTree() {
+        root_ = new ScopeNode();
+        current_ = root_;
+    }
+
+    const Symbol &resolve(const std::string &name) const {
+        return current_->resolve(name);
+    }
+
+    void define(const Symbol &symbol) const {
+        current_->define(symbol);
+    }
+
+    void push() {
+        ScopeNode *node = new ScopeNode(current_);
+        current_ = current_->push(node);
+    }
+
+    void pop() {
+        current_ = current_->get_enclosing_scope();
+    }
+
+    void print() const {
+        root_->print();
+    }
+
+private:
+    ScopeNode *root_;
+    ScopeNode *current_;
 };
 
 #endif //CMM_SCOPE_H

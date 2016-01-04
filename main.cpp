@@ -21,24 +21,20 @@ int main() {
         // std::cout << e.what() << std::endl;
     }
 
-    ScopeNode *root = new ScopeNode();
-    ScopeNode *current = root;
+    ScopeTree *tree = new ScopeTree();
 
     Symbol s1("i", 9);
-    current->define(s1);
+    tree->define(s1);
 
     Symbol s2("f", Symbol::Type::kReal, {Symbol("x", 0), Symbol("y", 0.0)});
-    current->define(s2);
+    tree->define(s2);
 
-    ScopeNode *method_f = new ScopeNode(current);
-    current = current->push(method_f);
+    tree->push();
 
     Symbol s3("x", 0);
     Symbol s4("y", 0.0);
-    current->define(s3);
-    current->define(s4);
-
-    root->print();
+    tree->define(s3);
+    tree->define(s4);
 
     return 0;
 }
