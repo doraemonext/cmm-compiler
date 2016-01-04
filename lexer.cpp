@@ -1,6 +1,36 @@
 #include "include/lexer.h"
 
+Lexer::Lexer() : input_(""), index_(0), in_row_comment_(false), in_block_comment_(false) {
+    current_ = npos;
+}
+
 Lexer::Lexer(const std::string &input) : input_(input), index_(0), in_row_comment_(false), in_block_comment_(false) {
+    if (input.length() == 0) {
+        current_ = npos;
+    } else {
+        current_ = input_[0];
+        maintain_position();
+    }
+}
+
+Lexer &Lexer::operator = (const Lexer &lexer) {
+    input_ = lexer.input_;
+    index_ = lexer.index_;
+    current_ = lexer.current_;
+    position_ = lexer.position_;
+    in_row_comment_ = lexer.in_row_comment_;
+    in_block_comment_ = lexer.in_block_comment_;
+    return *this;
+}
+
+// 设置输入
+void Lexer::set_input(std::string input) {
+    input_ = input;
+    index_ = 0;
+    position_.clear();
+    in_row_comment_ = false;
+    in_block_comment_ = false;
+
     if (input.length() == 0) {
         current_ = npos;
     } else {

@@ -12,8 +12,8 @@ ScopeNode::ScopeNode(ScopeNode *enclosing_scope) : enclosing_scope_(enclosing_sc
     }
 }
 
-Symbol &ScopeNode::resolve(const std::string &name) const {
-    std::map<std::string, Symbol>::const_iterator it = symbols_.find(name);
+Symbol &ScopeNode::resolve(const std::string &name) {
+    std::map<std::string, Symbol>::iterator it = symbols_.find(name);
     if (it != symbols_.end()) {
         return it->second;
     } else {
@@ -26,20 +26,20 @@ Symbol &ScopeNode::resolve(const std::string &name) const {
     }
 }
 
-inline void ScopeNode::define(const Symbol &symbol) {
+void ScopeNode::define(const Symbol &symbol) {
     symbols_.insert(std::pair<std::string, Symbol>(symbol.name(), symbol));
 }
 
-inline ScopeNode *ScopeNode::get_enclosing_scope() const {
+ScopeNode *ScopeNode::get_enclosing_scope() const {
     return enclosing_scope_;
 }
 
-inline ScopeNode *ScopeNode::push(ScopeNode *child) {
+ScopeNode *ScopeNode::push(ScopeNode *child) {
     children_.push_back(child);
     return children_.back();
 }
 
-inline int ScopeNode::level() const {
+int ScopeNode::level() const {
     return level_;
 }
 
@@ -62,23 +62,23 @@ ScopeTree::ScopeTree() {
     current_ = root_;
 }
 
-inline Symbol &ScopeTree::resolve(const std::string &name) const {
+Symbol &ScopeTree::resolve(const std::string &name) {
     return current_->resolve(name);
 }
 
-inline void ScopeTree::define(const Symbol &symbol) const {
+void ScopeTree::define(const Symbol &symbol) {
     current_->define(symbol);
 }
 
-inline void ScopeTree::push() {
+void ScopeTree::push() {
     ScopeNode *node = new ScopeNode(current_);
     current_ = current_->push(node);
 }
 
-inline void ScopeTree::pop() {
+void ScopeTree::pop() {
     current_ = current_->get_enclosing_scope();
 }
 
-inline void ScopeTree::print() const {
+void ScopeTree::print() const {
     root_->print();
 }

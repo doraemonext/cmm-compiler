@@ -7,7 +7,7 @@
 #include "utils.h"
 
 // 词法解析器字符不匹配异常
-class lexer_exception: public std::exception {
+class lexer_exception : public std::exception {
 public:
     explicit lexer_exception(const LexerPosition &position, const std::string &msg) : position_(position), msg_(msg) {
         std::stringstream buffer;
@@ -15,7 +15,7 @@ public:
         msg_ = buffer.str() + msg_;
     }
 
-    virtual ~lexer_exception() throw () { }
+    virtual ~lexer_exception() throw() { }
 
     virtual const char *what() const throw() { return msg_.c_str(); }
 
@@ -24,6 +24,18 @@ protected:
     std::string msg_;
 };
 
-class scope_not_found: public std::exception { };;
+class parser_exception : public std::exception {
+public:
+    explicit parser_exception(const std::string &msg) : msg_(msg) { }
+
+    virtual ~parser_exception() throw() { }
+
+    virtual const char *what() const throw() { return msg_.c_str(); }
+
+protected:
+    std::string msg_;
+};
+
+class scope_not_found : public std::exception { };
 
 #endif //CMM_EXCEPTIONS_H

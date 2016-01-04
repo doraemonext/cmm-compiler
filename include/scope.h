@@ -14,7 +14,7 @@ public:
 
     ScopeNode(ScopeNode *enclosing_scope);
 
-    Symbol &resolve(const std::string &name) const;
+    Symbol &resolve(const std::string &name);
 
     void define(const Symbol &symbol);
 
@@ -37,9 +37,9 @@ class ScopeTree {
 public:
     ScopeTree();
 
-    Symbol &resolve(const std::string &name) const;
+    Symbol &resolve(const std::string &name);
 
-    void define(const Symbol &symbol) const;
+    void define(const Symbol &symbol);
 
     void push();
 

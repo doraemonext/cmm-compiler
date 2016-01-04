@@ -50,9 +50,13 @@ public:
         kIntegerLiteral,     // int 类型
         kRealLiteral,        // real 类型
         kWhiteSpace,         // 空白字符类型
+
+        kNone,               // 空类型
     };
 
 public:
+    Token() : type_(Type::kNone), content_(""), position_(TokenPosition()) { }
+
     Token(const Type &type, const std::string &content, const TokenPosition &position) : type_(type), content_(content), position_(position) { }
 
     Token(const Type &type, const TokenPosition &position) : type_(type), content_(""), position_(position) { }

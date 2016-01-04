@@ -31,6 +31,11 @@ public:
         inc_col();
     }
 
+    virtual void clear() {
+        row_ = 1;
+        col_ = 0;
+    }
+
     friend std::ostream &operator << (std::ostream &os, const Position &position) {
         std::cout << "Row " << position.row() << " Col " << position.col();
         return os;
@@ -47,12 +52,19 @@ class LexerPosition: public Position { };
 // Token 位置类, 用于描述 Token 所在源文件的位置信息, 便于显示出错信息
 class TokenPosition: public Position {
 public:
+    TokenPosition() : Position(), length_(0) { }
+
     TokenPosition(int row, int col, int length) : Position(row, col), length_(length) { }
 
     TokenPosition(Position position, int length): Position(position), length_(length) { }
 
     int length() const { return length_; }
     void set_length(int length) { length_ = length; }
+
+    void clear() {
+        Position::clear();
+        length_ = 0;
+    }
 
 private:
     int length_;   // 长度

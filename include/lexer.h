@@ -11,7 +11,14 @@ class Lexer {
 public:
     const char npos = -1;  // 文件结束
 
+    Lexer();
+
     Lexer(const std::string &input);
+
+    Lexer &operator = (const Lexer &lexer);
+
+    // 设置输入
+    void set_input(std::string input);
 
     // 消费一个字符, 可以选择是否跳过空白字符
     void consume(const bool &skip);
