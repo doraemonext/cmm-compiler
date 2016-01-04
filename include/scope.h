@@ -5,62 +5,26 @@
 #include <map>
 #include <string>
 #include <list>
+#include "exceptions.h"
 #include "symbol.h"
 
 class ScopeNode {
 public:
-    ScopeNode(ScopeNode *enclosing_scope = nullptr) : enclosing_scope_(enclosing_scope) {
-        if (enclosing_scope == nullptr) {
-            level_ = 0;
-        } else {
-            level_ = enclosing_scope->level() + 1;
-        }
-    }
+    ScopeNode();
 
-    const Symbol &resolve(const std::string &name) const {
-        std::map<std::string, Symbol>::const_iterator it = symbols_.find(name);
-        if (it != symbols_.end()) {
-            return it->second;
-        } else {
-            ScopeNode *enclosing_scope = get_enclosing_scope();
-            if (enclosing_scope) {
-                return enclosing_scope->resolve(name);
-            } else {
-                throw scope_not_found();
-            }
-        }
-    }
+    ScopeNode(ScopeNode *enclosing_scope);
 
-    void define(const Symbol &symbol) {
-        symbols_.insert(std::pair<std::string, Symbol>(symbol.name(), symbol));
-    }
+    const Symbol &resolve(const std::string &name) const;
 
-    ScopeNode *get_enclosing_scope() const {
-        return enclosing_scope_;
-    }
+    void define(const Symbol &symbol);
 
-    ScopeNode *push(ScopeNode *child) {
-        children_.push_back(child);
-        return children_.back();
-    }
+    ScopeNode *get_enclosing_scope() const;
 
-    int level() const {
-        return level_;
-    }
+    ScopeNode *push(ScopeNode *child);
 
-    void print() const {
-        std::cout << "--------------------------" << std::endl;
-        std::cout << "Level: " << level() << std::endl;
-        std::cout << "--------------------------" << std::endl;
-        for (std::map<std::string, Symbol>::const_iterator it = symbols_.begin(); it != symbols_.end(); ++it) {
-            it->second.print();
-            std::cout << std::endl;
-        }
+    int level() const;
 
-        for (std::list<ScopeNode *>::const_iterator it = children_.begin(); it != children_.end(); ++it) {
-            (*it)->print();
-        }
-    }
+    void print() const;
 
 private:
     std::map<std::string, Symbol> symbols_;
@@ -71,31 +35,17 @@ private:
 
 class ScopeTree {
 public:
-    ScopeTree() {
-        root_ = new ScopeNode();
-        current_ = root_;
-    }
+    ScopeTree();
 
-    const Symbol &resolve(const std::string &name) const {
-        return current_->resolve(name);
-    }
+    const Symbol &resolve(const std::string &name) const;
 
-    void define(const Symbol &symbol) const {
-        current_->define(symbol);
-    }
+    void define(const Symbol &symbol) const;
 
-    void push() {
-        ScopeNode *node = new ScopeNode(current_);
-        current_ = current_->push(node);
-    }
+    void push();
 
-    void pop() {
-        current_ = current_->get_enclosing_scope();
-    }
+    void pop();
 
-    void print() const {
-        root_->print();
-    }
+    void print() const;
 
 private:
     ScopeNode *root_;
