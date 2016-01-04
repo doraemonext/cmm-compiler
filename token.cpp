@@ -60,6 +60,7 @@ const char *Token::token_type_name(const Type &type) {
         case Type::kMulOp: return "mul_op";
         case Type::kFactor: return "factor";
         case Type::kArray: return "array";
+        case Type::kFunctionCall: return "function_call";
         case Type::kNone: return "none";
         default: throw std::invalid_argument("received invalid type value");
     }

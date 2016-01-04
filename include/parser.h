@@ -24,6 +24,9 @@ public:
     // 获取下一个 Token 并移动当前位置
     void consume() {
         lookahead_[index_] = lexer_.next_token();
+        while (lookahead_[index_].type() == Token::Type::kLeftBlockComment || lookahead_[index_].type() == Token::Type::kLineComment) {
+            lookahead_[index_] = lexer_.next_token();
+        }
         index_ = (index_ + 1) % total_;
     }
 
@@ -114,8 +117,11 @@ public:
             parse_read_statement();
         } else if (forward_token().type() == Token::Type::kWrite) {
             parse_write_statement();
-        } else if (forward_token().type() == Token::Type::kIdentity) {
+        } else if (forward_token().type() == Token::Type::kIdentity && forward_token(2).type() != Token::Type::kLeftParen) {
             parse_assign_statement();
+        } else if (forward_token().type() == Token::Type::kIdentity && forward_token(2).type() == Token::Type::kLeftParen) {
+            parse_function_call();
+            match(Token::Type::kSemicolon);
         } else if (forward_token().type() == Token::Type::kReturn) {
             parse_return_statement();
         } else if (is_declare_keyword(forward_token().type())) {
@@ -239,6 +245,15 @@ public:
         if (forward_token().type() == Token::Type::kIdentity) {
             current_->add_child(forward_token());
             match(Token::Type::kIdentity);
+        } else if (forward_token().type() == Token::Type::kIntegerLiteral) {
+            current_->add_child(forward_token());
+            match(Token::Type::kIntegerLiteral);
+        } else if (forward_token().type() == Token::Type::kRealLiteral) {
+            current_->add_child(forward_token());
+            match(Token::Type::kRealLiteral);
+        } else {
+            buffer << "无效的标识符 \"" << forward_token().content() << "\", 无法将该内容作为函数返回值";
+            throw parser_exception(forward_token().position(), buffer.str());
         }
         match(Token::Type::kSemicolon);
 
@@ -424,7 +439,7 @@ public:
     }
 
     // 解析元素
-    // factor: REAL_LITERAL | INTEGER_LITERAL | ID | LPAREN expression RPAREN | ID array ;
+    // factor: REAL_LITERAL | INTEGER_LITERAL | ID | LPAREN expression RPAREN | ID array | function_call ;
     void parse_factor() {
         current_ = current_->add_child(Token::Type::kFactor, forward_token());
         std::stringstream buffer;
@@ -435,11 +450,15 @@ public:
         } else if (forward_token().type() == Token::Type::kIntegerLiteral) {
             current_->add_child(forward_token());
             match(Token::Type::kIntegerLiteral);
-        } else if (forward_token().type() == Token::Type::kIdentity) {
-            current_->add_child(forward_token());
-            match(Token::Type::kIdentity);
-            if (forward_token().type() == Token::Type::kLeftBracket) {
-                parse_array();
+        } else if (forward_token(1).type() == Token::Type::kIdentity) {
+            if (forward_token(2).type() == Token::Type::kLeftParen) {
+                parse_function_call();
+            } else {
+                current_->add_child(forward_token());
+                match(Token::Type::kIdentity);
+                if (forward_token().type() == Token::Type::kLeftBracket) {
+                    parse_array();
+                }
             }
         } else if (forward_token().type() == Token::Type::kLeftParen) {
             match(Token::Type::kLeftParen);
@@ -475,6 +494,40 @@ public:
         current_ = current_->parent();
     }
 
+    // 解析函数调用
+    // function_call: ID LPAREN ((ID | REAL_LITERAL | INTEGER_LITERAL) (COMMA (ID | REAL_LITERAL | INTEGER_LITERAL)*)?) RPAREN ;
+    void parse_function_call() {
+        current_ = current_->add_child(Token::Type::kFunctionCall, forward_token());
+        std::stringstream buffer;
+
+        current_->add_child(forward_token());
+        match(Token::Type::kIdentity);
+        match(Token::Type::kLeftParen);
+        if (is_literal(forward_token().type())) {
+            do {
+                if (forward_token().type() == Token::Type::kComma) {
+                    match(Token::Type::kComma);
+                }
+                if (forward_token().type() == Token::Type::kIdentity) {
+                    current_->add_child(forward_token());
+                    match(Token::Type::kIdentity);
+                } else if (forward_token().type() == Token::Type::kRealLiteral) {
+                    current_->add_child(forward_token());
+                    match(Token::Type::kRealLiteral);
+                } else if (forward_token().type() == Token::Type::kIntegerLiteral) {
+                    current_->add_child(forward_token());
+                    match(Token::Type::kIntegerLiteral);
+                } else {
+                    buffer << "无效的标识符 \"" << forward_token().content() << "\", 函数调用过程中仅允许 Identity, Real, Int 类型标识符";
+                    throw parser_exception(forward_token().position(), buffer.str());
+                }
+            } while (forward_token().type() == Token::Type::kComma);
+        }
+        match(Token::Type::kRightParen);
+
+        current_ = current_->parent();
+    }
+
     void print_ast() const {
         root_->print();
     }
@@ -502,6 +555,10 @@ private:
 
     bool is_mul_op(const Token::Type &type) {
         return type == Token::Type::kTimes || type == Token::Type::kDivide;
+    }
+
+    bool is_literal(const Token::Type &type) {
+        return type == Token::Type::kIntegerLiteral || type == Token::Type::kRealLiteral || type == Token::Type::kIdentity;
     }
 };
 

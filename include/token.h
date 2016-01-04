@@ -76,6 +76,7 @@ public:
         kMulOp,              // 乘除比较符
         kFactor,             // 元素
         kArray,              // 数组
+        kFunctionCall,       // 函数调用
 
         kNone,               // 空类型
     };
