@@ -12,7 +12,7 @@ ScopeNode::ScopeNode(ScopeNode *enclosing_scope) : enclosing_scope_(enclosing_sc
     }
 }
 
-const Symbol &ScopeNode::resolve(const std::string &name) const {
+Symbol &ScopeNode::resolve(const std::string &name) const {
     std::map<std::string, Symbol>::const_iterator it = symbols_.find(name);
     if (it != symbols_.end()) {
         return it->second;
@@ -62,7 +62,7 @@ ScopeTree::ScopeTree() {
     current_ = root_;
 }
 
-inline const Symbol &ScopeTree::resolve(const std::string &name) const {
+inline Symbol &ScopeTree::resolve(const std::string &name) const {
     return current_->resolve(name);
 }
 
