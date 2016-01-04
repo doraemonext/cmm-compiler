@@ -24,4 +24,6 @@ protected:
     std::string msg_;
 };
 
+class scope_not_found: public std::exception { };;
+
 #endif //CMM_EXCEPTIONS_H

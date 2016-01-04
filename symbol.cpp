@@ -1,7 +1,7 @@
 #include "include/symbol.h"
 
 // 测试函数
-void Symbol::print() {
+void Symbol::print() const {
     std::cout << "Name: " << name_ << std::endl;
     std::cout << "Type: " << type_ << std::endl;
     std::cout << "Ret Type: " << ret_type_ << std::endl;

@@ -112,7 +112,7 @@ public:
     }
 
     // 测试函数
-    void print();
+    void print() const;
 
 private:
     typedef struct {

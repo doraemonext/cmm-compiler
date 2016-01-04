@@ -1,9 +1,11 @@
 #include <iostream>
 #include <string>
+#include <vector>
 #include "include/token.h"
 #include "include/lexer.h"
 #include "include/utils.h"
 #include "include/symbol.h"
+#include "include/scope.h"
 
 using namespace std;
 
@@ -19,8 +21,24 @@ int main() {
         // std::cout << e.what() << std::endl;
     }
 
-    Symbol *symbol = new Symbol("value_a", Symbol::Type::kInt);
-    symbol->print();
+    ScopeNode *root = new ScopeNode();
+    ScopeNode *current = root;
+
+    Symbol s1("i", 9);
+    current->define(s1);
+
+    Symbol s2("f", Symbol::Type::kReal, {Symbol("x", 0), Symbol("y", 0.0)});
+    current->define(s2);
+
+    ScopeNode *method_f = new ScopeNode(current);
+    current = current->push(method_f);
+
+    Symbol s3("x", 0);
+    Symbol s4("y", 0.0);
+    current->define(s3);
+    current->define(s4);
+
+    root->print();
 
     return 0;
 }
