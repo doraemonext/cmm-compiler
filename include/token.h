@@ -51,71 +51,33 @@ public:
         kRealLiteral,        // real 类型
         kWhiteSpace,         // 空白字符类型
 
+        kProgram,            // 程序整体
+
+        kStatements,         // 多语句
+        kFunctions,          // 多函数
+
+        kStatement,          // 语句
+        kFunction,           // 函数
+
+        kIfStatement,        // if 语句
+        kWhileStatement,     // while 语句
+        kReadStatement,      // read 语句
+        kWriteStatement,     // write 语句
+        kAssignStatement,    // 赋值语句
+        kDeclareStatement,   // 定义语句
+        kReturnStatement,    // 返回语句
+
+        kDeclareKeyword,     // 定义关键字
+        kCondition,          // 判别式
+        kExpression,         // 表达式
+        kTerm,               // 元素
+        kComparisonOp,       // 比较符
+        kAddOp,              // 加减比较符
+        kMulOp,              // 乘除比较符
+        kFactor,             // 元素
+        kArray,              // 数组
+
         kNone,               // 空类型
-    };
-
-    // 语法解析类型
-    enum class ParserType {
-        kProgram = 0,
-
-        kStatements,
-        kFunctions,
-
-        kStatement,
-        kFunction,
-
-        kIfStatement,
-        kWhileStatement,
-        kReadStatement,
-        kWriteStatement,
-        kAssignStatement,
-        kDeclareStatement,
-        kReturnStatement,
-
-        kDeclareKeyword,
-        kCondition,
-        kExpression,
-        kTerm,
-        kComparisonOp,
-        kAddOp,
-        kMulOp,
-        kFactor,
-        kArray,
-
-        kFunc,
-        kReturn,
-        kRead,
-        kWrite,
-        kWhile,
-        kIf,
-        kElse,
-        kInt,
-        kReal,
-        kVoid,
-        kSemicolon,
-        kLeftParen,
-        kRightParen,
-        kLeftBracket,
-        kRightBracket,
-        kLeftBrace,
-        kRightBrace,
-        kComma,
-        kAssign,
-        kPlus,
-        kMinus,
-        kTimes,
-        kDivide,
-        kLT,
-        kLTE,
-        kGT,
-        kGTE,
-        kEqual,
-        kNotEqual,
-        kIdentity,
-        kIntegerLiteral,
-        kRealLiteral,
-
-        kNone,
     };
 
 public:
