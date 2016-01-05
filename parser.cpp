@@ -39,6 +39,11 @@ Token Parser::match(const Token::Type &x) {
     }
 }
 
+// 获取 AST
+AbstractSyntaxNode *Parser::ast() {
+    return root_;
+}
+
 // 解析整个程序
 void Parser::parse_program() {
     root_ = new AbstractSyntaxNode(Token(Token::Type::kProgram, TokenPosition(1, 0, 0)));

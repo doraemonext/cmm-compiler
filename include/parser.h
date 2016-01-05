@@ -20,6 +20,9 @@ public:
     // 尝试将当前的下一个 Token 与预期 Token 类型比对
     Token match(const Token::Type &x);
 
+    // 获取 AST
+    AbstractSyntaxNode *ast();
+
     // 解析整个程序
     void parse_program();
 

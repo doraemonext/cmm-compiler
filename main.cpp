@@ -1,14 +1,11 @@
 #include <iostream>
-#include <string>
 #include <vector>
-#include <stdio.h>
 #include <fstream>
 #include "include/token.h"
 #include "include/lexer.h"
 #include "include/parser.h"
-#include "include/utils.h"
-#include "include/symbol.h"
-#include "include/scope.h"
+#include "include/semantic.h"
+#include "include/ir.h"
 
 using namespace std;
 
@@ -21,16 +18,13 @@ int main() {
     Parser parser(lexer, 2);
     parser.parse_program();
     parser.print_ast();
-//    try {
-//        Token token = lexer.next_token();
-//        while (token.type() != Token::Type::kEOF) {
-//            token.print();
-//            cout << endl;
-//            token = lexer.next_token();
-//        }
-//    } catch (const lexer_exception &e) {
-//        std::cout << e.what() << std::endl;
-//    }
+
+    Semantic semantic(parser.ast());
+    semantic.analyse();
+
+    std::vector<IR> ir;
+    ir.push_back(IR(OpCode::kAdd, Var(Var::Type::kInt, 10), Var(Var::Type::kReal, 10.0), Var(Var::Type::kInt, 10)));
+    cout << ir[0] << endl;
 
 //    ScopeTree *tree = new ScopeTree();
 //
