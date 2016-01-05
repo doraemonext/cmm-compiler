@@ -18,6 +18,8 @@ public:
         kVoid,
     };
 
+    Symbol() : name_(""), type_(Symbol::Type::kNone), ret_type_(Symbol::Type::kNone), is_assigned_(false) { }
+
     // 针对函数的构造函数, 默认构造返回值为 void, 参数列表为空
     Symbol(const std::string &name, const Type &ret_type = Symbol::Type::kVoid, const std::vector<Symbol> &args = {}) :
             name_(name), type_(Symbol::Type::kFunction), ret_type_(ret_type), is_assigned_(true) {

@@ -25,7 +25,9 @@ public:
         kVarRealArray,                   // varra a, b || varra a, 5
 
         kPushInteger,                    // pushi a || pushi 5
+        kPushIntegerArray,               // pushia a, 5
         kPushReal,                       // pushr a || pushr 6.0
+        kPushRealArray,                  // pushra a, 5
 
         kPop,                            // pop
         kPopInteger,                     // popi a
@@ -170,8 +172,14 @@ public:
             case Type::kPushInteger:
                 os << "pushi " << pcode.first();
                 break;
+            case Type::kPushIntegerArray:
+                os << "pushia " << pcode.first() << ", " << pcode.second();
+                break;
             case Type::kPushReal:
                 os << "pushr " << pcode.first();
+                break;
+            case Type::kPushRealArray:
+                os << "pushra " << pcode.first() << ", " << pcode.second();
                 break;
             case Type::kPop:
                 os << "pop";

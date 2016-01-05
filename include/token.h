@@ -72,6 +72,7 @@ public:
         kReturnStatement,    // 返回语句
 
         kDeclareKeyword,     // 定义关键字
+        kIdentityArray,      // 左值
         kCondition,          // 判别式
         kExpression,         // 表达式
         kTerm,               // 元素

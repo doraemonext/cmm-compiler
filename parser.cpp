@@ -236,11 +236,13 @@ void Parser::parse_assign_statement() {
     current_ = current_->add_child(Token::Type::kAssignStatement, forward_token());
     std::stringstream buffer;
 
+    current_ = current_->add_child(Token::Type::kIdentityArray, forward_token());
     current_->add_child(forward_token());
     match(Token::Type::kIdentity);
     if (forward_token().type() == Token::Type::kLeftBracket) {
         parse_array();
     }
+    current_ = current_->parent();
     match(Token::Type::kAssign);
     parse_expression();
     match(Token::Type::kSemicolon);
@@ -470,11 +472,13 @@ void Parser::parse_factor() {
         if (forward_token(2).type() == Token::Type::kLeftParen) {
             parse_function_call();
         } else {
+            current_ = current_->add_child(Token::Type::kIdentityArray, forward_token());
             current_->add_child(forward_token());
             match(Token::Type::kIdentity);
             if (forward_token().type() == Token::Type::kLeftBracket) {
                 parse_array();
             }
+            current_ = current_->parent();
         }
     } else if (forward_token().type() == Token::Type::kLeftParen) {
         match(Token::Type::kLeftParen);
@@ -498,8 +502,11 @@ void Parser::parse_array() {
     if (forward_token().type() == Token::Type::kIntegerLiteral) {
         current_->add_child(forward_token());
         match(Token::Type::kIntegerLiteral);
+    } else if (forward_token().type() == Token::Type::kIdentity) {
+        current_->add_child(forward_token());
+        match(Token::Type::kIdentity);
     } else {
-        buffer << "无效的标识符 \"" << forward_token().content() << "\", 数组括号中仅允许整数常量";
+        buffer << "无效的标识符 \"" << forward_token().content() << "\", 数组括号中仅允许整数常量或变量(变量仅限用作左值)";
         throw parser_exception(forward_token().position(), buffer.str());
     }
     match(Token::Type::kRightBracket);

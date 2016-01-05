@@ -56,6 +56,7 @@ const char *Token::token_type_name(const Type &type) {
         case Type::kDeclareStatement: return "declare_statement";
         case Type::kReturnStatement: return "return_statement";
         case Type::kDeclareKeyword: return "declare_keyword";
+        case Type::kIdentityArray: return "identity_array";
         case Type::kCondition: return "condition";
         case Type::kExpression: return "expression";
         case Type::kTerm: return "term";

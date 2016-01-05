@@ -1,4 +1,2 @@
-int a;
-real c, d;
-int[5] e, zzz, z;
-int[2] t;
+int a, b;
+a = b;

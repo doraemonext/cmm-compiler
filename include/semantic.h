@@ -139,6 +139,7 @@ public:
             case Token::Type::kWriteStatement:
                 break;
             case Token::Type::kAssignStatement:
+                result = analyse_assign_statement(0);
                 break;
             case Token::Type::kDeclareStatement:
                 result = analyse_declare_statement(0);
@@ -152,6 +153,54 @@ public:
 
         current_ = current_->parent();
         return result;
+    }
+
+    // 解析赋值语句
+    Token analyse_assign_statement(const int &pos) {
+        current_ = child(pos);
+
+        // 分界左值格式
+        int offset = 0;
+        Token left_identity = analyse_identity_array(offset++);
+        std::string identity = left_identity.content();
+        int array_offset = -1;
+        std::string::size_type p = identity.find(",");
+        if (p != std::string::npos) {
+            array_offset = std::stoi(identity.substr(p+1));
+            identity = identity.substr(0, p);
+        }
+
+        // 检查标识符是否定义
+        Symbol identity_symbol;
+        try {
+            identity_symbol = tree_.resolve(identity);
+            if ((left_identity.type() == Token::Type::kIdentity && identity_symbol.type() != Symbol::Type::kInt && identity_symbol.type() != Symbol::Type::kReal) ||
+                (left_identity.type() == Token::Type::kIdentityArray && identity_symbol.type() != Symbol::Type::kIntArray && identity_symbol.type() != Symbol::Type::kRealArray)) {
+                add_error_messages(left_identity.position(), "左值 \"" + identity + "\" 类型与其定义类型不符");
+                throw scope_critical_error();
+            }
+        } catch (const scope_not_found &e) {
+            add_error_messages(left_identity.position(), "未定义的标识符 \"" + identity + "\" 不能用于赋值语句的左值");
+            throw scope_critical_error();
+        }
+
+        // 检查数组偏移量是否越界
+        if (array_offset != -1) {
+            if (array_offset < 0 ||
+                (identity_symbol.type() == Symbol::Type::kIntArray && identity_symbol.int_array().size() <= array_offset) ||
+                (identity_symbol.type() == Symbol::Type::kRealArray && identity_symbol.real_array().size() <= array_offset)) {
+                add_error_messages(left_identity.position(), "数组 \"" + identity + "\" 的偏移地址越界");
+                throw scope_critical_error();
+            }
+        }
+
+        Token right = analyse_expression(offset++);
+
+        // 生成 IR
+        build_assign_statement_ir(left_identity, array_offset, identity_symbol.type());
+
+        current_ = current_->parent();
+        return Token(Token::Type::kAssignStatement, current_->token().position());
     }
 
     // 解析定义语句
@@ -182,13 +231,13 @@ public:
                     tree_.define(Symbol(last.content(), 0, false));
                     break;
                 case Token::Type::kIntArray:
-                    tree_.define(Symbol(last.content(), std::vector<int>(), false));
+                    tree_.define(Symbol(last.content(), std::vector<int>(std::stoul(declare_keyword.content())), false));
                     break;
                 case Token::Type::kReal:
                     tree_.define(Symbol(last.content(), 0.0, false));
                     break;
                 case Token::Type::kRealArray:
-                    tree_.define(Symbol(last.content(), std::vector<double>(), false));
+                    tree_.define(Symbol(last.content(), std::vector<double>(std::stoul(declare_keyword.content())), false));
                     break;
                 case Token::Type::kVoid:
                     add_error_messages(last.position(), "变量 \"" + last.content() + "\" 类型不合法, 不允许使用 void 类型定义变量");
@@ -276,6 +325,38 @@ public:
         return result;
     }
 
+    // 解析带数组偏移的标识符
+    Token analyse_identity_array(const int &pos) {
+        current_ = child(pos);
+        Token result;
+
+        if (current_->children().size() == 1) {
+            if (child_type(0) == Token::Type::kIdentity) {
+                result = Token(Token::Type::kIdentity, child(0)->token().content(), child(0)->token().position());
+            } else {
+                add_error_messages(child(0)->token().position(), "错误的左值 \"" + child(0)->token().content() + "\"");
+                throw scope_critical_error();
+            }
+        } else {
+            Token array = child(1)->child(0)->token();
+            if (array.type() != Token::Type::kIntegerLiteral && array.type() != Token::Type::kIdentity) {
+                add_error_messages(child(0)->token().position(), "错误的数组偏移位移, 仅允许使用整数或整型变量");
+                throw scope_critical_error();
+            }
+
+            if (child_type(0) == Token::Type::kIdentity) {
+                result = Token(Token::Type::kIdentityArray, child(0)->token().content() + "," + child(1)->child(0)->token().content(), current_->token().position());
+            } else {
+                add_error_messages(child(0)->token().position(), "错误的左值 \"" + child(0)->token().content() + "\"");
+                throw scope_critical_error();
+            }
+        }
+
+        current_ = current_->parent();
+        return result;
+    }
+
+
     // 解析标识符
     Token analyse_identity(const int &pos) {
         Token result = child(pos)->token();
@@ -295,6 +376,124 @@ public:
             add_error_messages(result.position(), "无效的标识符\"" + result.content() + "\", 仅允许变量, 整数或实数类型");
             throw scope_critical_error();
         }
+    }
+
+    // 解析表达式
+    Token analyse_expression(const int &pos) {
+        current_ = child(pos);
+        Token result;
+
+        int offset = 0;
+        result = analyse_term(offset++);
+        while (offset < children_size()) {
+            Token op = analyse_add_op(offset++);
+            Token term = analyse_term(offset++);
+            build_expression_ir(op);
+        }
+
+        current_ = current_->parent();
+        return result;
+    }
+
+    // 解析算术式
+    Token analyse_term(const int &pos) {
+        current_ = child(pos);
+        Token result;
+
+        int offset = 0;
+        result = analyse_factor(offset++);
+        while (offset < children_size()) {
+            Token op = analyse_mul_op(offset++);
+            Token term = analyse_factor(offset++);
+            build_term_ir(op);
+        }
+
+        current_ = current_->parent();
+        return result;
+    }
+
+    // 解析元素
+    Token analyse_factor(const int &pos) {
+        current_ = child(pos);
+        Token result;
+        Token identity = child(0)->token();
+        Symbol identity_symbol;
+
+        switch (child_type(0)) {
+            case Token::Type::kIntegerLiteral:
+                result = Token(Token::Type::kInt, identity.position());
+                ir_.add(PCode(PCode::Type::kPushInteger, child(0)->token().content(), ir_indent_));
+                break;
+            case Token::Type::kRealLiteral:
+                result = Token(Token::Type::kReal, identity.position());
+                ir_.add(PCode(PCode::Type::kPushReal, child(0)->token().content(), ir_indent_));
+                break;
+            case Token::Type::kIdentity:
+                try {
+                    identity_symbol = tree_.resolve(identity.content());
+                } catch (const scope_not_found &e) {
+                    add_error_messages(identity.position(), "未定义的标识符\"" + identity.content() + "\"");
+                    throw scope_critical_error();
+                }
+
+                if (identity_symbol.type() == Symbol::Type::kInt) {
+                    result = Token(Token::Type::kInt, identity.position());
+                    ir_.add(PCode(PCode::Type::kPushInteger, child(0)->token().content(), ir_indent_));
+                } else if (identity_symbol.type() == Symbol::Type::kIntArray) {
+                    result = Token(Token::Type::kIntArray, identity.position());
+                    ir_.add(PCode(PCode::Type::kPushIntegerArray, child(0)->token().content(), ir_indent_));
+                } else if (identity_symbol.type() == Symbol::Type::kReal) {
+                    result = Token(Token::Type::kReal, identity.position());
+                    ir_.add(PCode(PCode::Type::kPushReal, child(0)->token().content(), ir_indent_));
+                } else if (identity_symbol.type() == Symbol::Type::kRealArray) {
+                    result = Token(Token::Type::kRealArray, identity.position());
+                    ir_.add(PCode(PCode::Type::kPushRealArray, child(0)->token().content(), ir_indent_));
+                } else {
+                    add_error_messages(identity.position(), "无法辨识的符号 \"" + identity.content() + "\"");
+                    throw scope_critical_error();
+                }
+                break;
+//            case Token::Type::kIdentityArray:
+//                try {
+//                    identity_symbol = tree_.resolve(identity.content());
+//                } catch (const scope_not_found &e) {
+//                    add_error_messages(identity.position(), "未定义的标识符\"" + identity.content() + "\"");
+//                    throw scope_critical_error();
+//                }
+
+//                if (identity_symbol.type() == Symbol::Type::kInt || identity_symbol.type() == Symbol::Type::kReal) {
+//                    add_error_messages(identity.position(), "未定义的标识符\"" + identity.content() + "\"");
+//                    throw scope_critical_error();
+//                } else if (identity_symbol.type() == Symbol::Type::kIntArray) {
+//                    result = Token(Token::Type::kIntArray, identity.position());
+//                    ir_.add(PCode(PCode::Type::kPushIntegerArray, child(0)->token().content(), ir_indent_));
+//                } else if (identity_symbol.type() == Symbol::Type::kRealArray) {
+//                    result = Token(Token::Type::kRealArray, identity.position());
+//                    ir_.add(PCode(PCode::Type::kPushRealArray, child(0)->token().content(), ir_indent_));
+//                } else {
+//                    add_error_messages(identity.position(), "无法辨识的符号 \"" + identity.content() + "\"");
+//                    throw scope_critical_error();
+//                }
+                break;
+            case Token::Type::kExpression:
+                result = analyse_expression(0);
+                break;
+            case Token::Type::kFunctionCall:
+                break;
+            default:
+                break;
+        }
+
+        current_ = current_->parent();
+        return result;
+    }
+
+    Token analyse_add_op(const int &pos) {
+        return child(pos)->child(0)->token();
+    }
+
+    Token analyse_mul_op(const int &pos) {
+        return child(pos)->child(0)->token();
     }
 
     void print_error_messages() const {
@@ -397,6 +596,45 @@ private:
                 break;
         }
     }
+
+    void build_assign_statement_ir(const Token &left_identity, const int &array_offset, const Symbol::Type &type) {
+        if (left_identity.type() == Token::Type::kIdentityArray) {
+            if (type == Symbol::Type::kIntArray) {
+                ir_.add(PCode(PCode::Type::kPopIntegerArray, left_identity.content().substr(0, left_identity.content().find(",")), std::to_string(array_offset), ir_indent_));
+            } else if (type == Symbol::Type::kRealArray) {
+                ir_.add(PCode(PCode::Type::kPopRealArray, left_identity.content().substr(0, left_identity.content().find(",")), std::to_string(array_offset), ir_indent_));
+            } else {
+                throw std::invalid_argument("build_assign_statement_ir 1 failed, not expected.");
+            }
+        } else if (left_identity.type() == Token::Type::kIdentity) {
+            if (type == Symbol::Type::kInt) {
+                ir_.add(PCode(PCode::Type::kPopInteger, left_identity.content(), ir_indent_));
+            } else if (type == Symbol::Type::kReal) {
+                ir_.add(PCode(PCode::Type::kPopReal, left_identity.content(), ir_indent_));
+            } else {
+                throw std::invalid_argument("build_assign_statement_ir 2 failed, not expected.");
+            }
+        } else {
+            throw std::invalid_argument("build_assign_statement_ir 3 failed, not expected.");
+        }
+    }
+
+    void build_expression_ir(const Token &op) {
+        if (op.type() == Token::Type::kPlus) {
+            ir_.add(PCode(PCode::Type::kAdd, ir_indent_));
+        } else {
+            ir_.add(PCode(PCode::Type::kSub, ir_indent_));
+        }
+    }
+
+    void build_term_ir(const Token &op) {
+        if (op.type() == Token::Type::kTimes) {
+            ir_.add(PCode(PCode::Type::kMul, ir_indent_));
+        } else {
+            ir_.add(PCode(PCode::Type::kDiv, ir_indent_));
+        }
+    }
 };
 
 #endif //CMM_SEMANTIC_H
+
