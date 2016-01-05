@@ -82,7 +82,8 @@ public:
         kArray,              // 数组
         kFunctionCall,       // 函数调用
 
-        kResult,             // 计算结果
+        kIntArray,           // int array
+        kRealArray,          // real array
 
         kNone,               // 空类型
     };

@@ -30,7 +30,7 @@ public:
     }
 
     Token analyse_function(const int &pos) {
-        current_ = child(pos);
+        current_ = child(pos); 
 
 //        int offset = 0;
 //        Token declare_keyword = analyse_declare_keyword(child(offset++));
