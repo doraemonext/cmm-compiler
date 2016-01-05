@@ -1,6 +1,3 @@
-func int factor(int a, real[5] b) {
-    write(a);
-    write(b);
-
-    return 5.0;
-}
+int a;
+real c, d;
+int[5] e;

@@ -26,6 +26,20 @@ Symbol &ScopeNode::resolve(const std::string &name) {
     }
 }
 
+ScopeNode *ScopeNode::resolve_scope(const std::string &name) {
+    std::map<std::string, Symbol>::iterator it = symbols_.find(name);
+    if (it != symbols_.end()) {
+        return this;
+    } else {
+        ScopeNode *enclosing_scope = get_enclosing_scope();
+        if (enclosing_scope) {
+            return enclosing_scope->resolve_scope(name);
+        } else {
+            throw scope_not_found();
+        }
+    }
+}
+
 void ScopeNode::define(const Symbol &symbol) {
     if (symbols_.find(symbol.name()) == symbols_.end()) {
         symbols_.insert(std::pair<std::string, Symbol>(symbol.name(), symbol));
@@ -68,6 +82,10 @@ ScopeTree::ScopeTree() {
 
 Symbol &ScopeTree::resolve(const std::string &name) {
     return current_->resolve(name);
+}
+
+ScopeNode *ScopeTree::resolve_scope(const std::string &name) {
+    return current_->resolve_scope(name);
 }
 
 void ScopeTree::define(const Symbol &symbol) {

@@ -279,6 +279,7 @@ void Parser::parse_declare_statement() {
     current_ = current_->add_child(Token::Type::kDeclareStatement, forward_token());
     std::stringstream buffer;
 
+    current_ = current_->add_child(Token::Type::kDeclareKeyword, forward_token());
     if (forward_token().type() == Token::Type::kInt) {
         current_->add_child(forward_token());
         match(Token::Type::kInt);
@@ -298,6 +299,8 @@ void Parser::parse_declare_statement() {
         buffer << "无效的标识符 \"" << forward_token().content() << "\"";
         throw parser_exception(forward_token().position(), buffer.str());
     }
+    current_ = current_->parent();
+
     current_->add_child(forward_token());
     match(Token::Type::kIdentity);
     while (forward_token().type() == Token::Type::kComma) {

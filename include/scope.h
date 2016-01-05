@@ -17,6 +17,8 @@ public:
 
     Symbol &resolve(const std::string &name);
 
+    ScopeNode *resolve_scope(const std::string &name);
+
     void define(const Symbol &symbol);
 
     ScopeNode *get_enclosing_scope() const;
@@ -39,6 +41,8 @@ public:
     ScopeTree();
 
     Symbol &resolve(const std::string &name);
+
+    ScopeNode *resolve_scope(const std::string &name);
 
     void define(const Symbol &symbol);
 

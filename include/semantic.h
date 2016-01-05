@@ -141,6 +141,7 @@ public:
             case Token::Type::kAssignStatement:
                 break;
             case Token::Type::kDeclareStatement:
+                result = analyse_declare_statement(0);
                 break;
             case Token::Type::kReturnStatement:
                 result = analyse_return_statement(0, function_symbol);
@@ -151,6 +152,54 @@ public:
 
         current_ = current_->parent();
         return result;
+    }
+
+    // 解析定义语句
+    Token analyse_declare_statement(const int &pos) {
+        current_ = child(pos);
+
+        int offset = 0;
+        Token declare_keyword = analyse_declare_keyword(offset++);
+        std::vector<Token> identity;
+        while (offset < children_size()) {
+            identity.push_back(analyse_identity(offset++));
+
+            // 检查是否重复定义
+            const Token &last = identity.back();
+            try {
+                ScopeNode *node = tree_.resolve_scope(last.content());
+                if (node->level() == tree_.current()->level()) {
+                    add_error_messages(last.position(), "重复定义的变量 \"" + last.content() + "\"");
+                    throw scope_critical_error();
+                } else {
+                    add_warning_messages(last.position(), "重复定义变量 \"" + last.content() + "\" 将会覆盖上层作用域的同名变量");
+                }
+            } catch (const scope_not_found &e) { }
+
+            // 定义
+            switch (declare_keyword.type()) {
+                case Token::Type::kInt:
+                    tree_.define(Symbol(last.content(), 0, false));
+                    break;
+                case Token::Type::kIntArray:
+                    tree_.define(Symbol(last.content(), std::vector<int>(), false));
+                    break;
+                case Token::Type::kReal:
+                    tree_.define(Symbol(last.content(), 0.0, false));
+                    break;
+                case Token::Type::kRealArray:
+                    tree_.define(Symbol(last.content(), std::vector<double>(), false));
+                    break;
+                case Token::Type::kVoid:
+                    add_error_messages(last.position(), "变量 \"" + last.content() + "\" 类型不合法, 不允许使用 void 类型定义变量");
+                    throw scope_critical_error();
+                default:
+                    break;
+            }
+        }
+
+        current_ = current_->parent();
+        return Token(Token::Type::kDeclareStatement, identity.back().position());
     }
 
     // 解析 return 语句
