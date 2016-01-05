@@ -46,4 +46,6 @@ class scope_not_found : public std::exception { };
 
 class scope_name_exists : public std::exception { };
 
+class scope_critical_error : public std::exception { };
+
 #endif //CMM_EXCEPTIONS_H

@@ -10,7 +10,7 @@
 
 class Semantic {
 public:
-    Semantic(AbstractSyntaxNode *root) {
+    Semantic(AbstractSyntaxNode *root) : ir_indent_(4) {
         root_ = root;
         current_ = root_;
     }
@@ -42,6 +42,7 @@ public:
         try {
             tree_.resolve(identity.content());
             add_error_messages(identity.position(), "重复定义的函数名称 \"" + std::string(identity.content()) + "\", 请尝试使用其他不冲突的函数名称");
+            throw scope_critical_error();
         } catch (const scope_not_found &e) { }
 
         // 分析函数形参
@@ -57,12 +58,13 @@ public:
                 // 检查使用 void 空类型的函数形参
                 if (first.type() == Token::Type::kVoid) {
                     add_error_messages(first.position(), "函数形参不能使用空类型 \"void\"");
+                    throw scope_critical_error();
                 }
                 // 检查函数形参是否覆盖上层作用域的同名变量
                 try {
                     tree_.resolve(second.content());
                     add_warning_messages(second.position(), "函数 \"" + std::string(identity.content()) + "\" 的形参 \"" + second.content() + "\" 将会覆盖上层作用域的同名变量");
-                } catch (const scope_not_found &e) {}
+                } catch (const scope_not_found &e) { }
 
                 parameters.push_back(std::pair<Token, Token>(first, second));
                 current_ = current_->parent();
@@ -99,14 +101,19 @@ public:
                 tree_.define(parameters_symbol[i]);
             } catch (const scope_name_exists &e) {
                 add_error_messages(parameters[i].second.position(), "函数 \"" + std::string(identity.content()) + "\" 的形参 \"" + parameters_symbol[i].name() + "\" 重复定义");
+                throw scope_critical_error();
             }
         }
+
+        build_function_ir_start(identity);      // 生成函数定义起始位置 IR
+        build_function_ir_args(parameters);     // 生成函数形参 IR
 
         while (offset < children_size() && child_type(offset) == Token::Type::kFunctionStatements) {
             analyse_statement(offset++);
         }
         tree_.pop(); // 作用域递减
 
+        build_function_ir_end(identity);        // 生成函数结尾 IR
         current_ = current_->parent();
         return Token(Token::Type::kFunction, current_->token().position());
     }
@@ -129,6 +136,7 @@ public:
                 result = Token(Token::Type::kVoid, child(0)->token().position());
             } else {
                 add_error_messages(child(0)->token().position(), "错误的函数定义类型 \"" + std::string(Token::token_type_name(child_type(0))) + "\"");
+                throw scope_critical_error();
             }
         } else {
             if (child_type(0) == Token::Type::kInt) {
@@ -137,6 +145,7 @@ public:
                 result = Token(Token::Type::kRealArray, child(1)->child(0)->token().content(), current_->token().position());
             } else {
                 add_error_messages(child(0)->token().position(), "错误的函数定义类型 \"" + std::string(Token::token_type_name(child_type(0))) + "\"");
+                throw scope_critical_error();
             }
         }
 
@@ -161,11 +170,16 @@ public:
         }
     }
 
+    void print_ir() const {
+        std::cout << ir_ << std::endl;
+    }
+
 private:
     AbstractSyntaxNode *root_;
     AbstractSyntaxNode *current_;
     ScopeTree tree_;
-    std::vector<PCode> ir_;
+    IR ir_;
+    int ir_indent_;
     std::vector<std::pair<Position, std::string> > error_messages_;
     std::vector<std::pair<Position, std::string> > warning_messages_;
 
@@ -191,6 +205,35 @@ private:
 
     void add_warning_messages(const Position &position, const std::string &message) {
         warning_messages_.push_back(std::pair<Position, std::string>(position, message));
+    }
+
+    void build_function_ir_start(const Token &identity) {
+        ir_.add(PCode(PCode::Type::kStartFunc, identity.content(), ir_indent_));
+    }
+
+    void build_function_ir_args(const std::vector<std::pair<Token, Token> > &args) {
+        for (int i = 0; i < (int)args.size(); ++i) {
+            switch (args[i].first.type()) {
+                case Token::Type::kInt:
+                    ir_.add(PCode(PCode::Type::kArgInteger, args[i].second.content(), ir_indent_));
+                    break;
+                case Token::Type::kIntArray:
+                    ir_.add(PCode(PCode::Type::kArgIntegerArray, args[i].second.content(), ir_indent_));
+                    break;
+                case Token::Type::kReal:
+                    ir_.add(PCode(PCode::Type::kArgReal, args[i].second.content(), ir_indent_));
+                    break;
+                case Token::Type::kRealArray:
+                    ir_.add(PCode(PCode::Type::kArgRealArray, args[i].second.content(), ir_indent_));
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    void build_function_ir_end(const Token &identity) {
+        ir_.add(PCode(PCode::Type::kEndFunc, identity.content(), ir_indent_));
     }
 };
 

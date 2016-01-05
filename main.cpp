@@ -18,11 +18,16 @@ int main() {
     Parser parser(lexer, 2);
     parser.parse_program();
     parser.print_ast();
+    cout << endl;
 
     Semantic semantic(parser.ast());
-    semantic.analyse();
-    semantic.print_error_messages();
-    semantic.print_warning_messages();
+    try {
+        semantic.analyse();
+        semantic.print_ir();
+    } catch (const scope_critical_error &e) {
+        semantic.print_error_messages();
+        semantic.print_warning_messages();
+    }
 
 //    IR ir;
 //    ir.add(PCode(PCode::Type::kStartFunc, "factor", 0));

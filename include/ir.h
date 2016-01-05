@@ -9,9 +9,9 @@ public:
     enum class Type {
         kNone = 0,
         kStartFunc,                      // FUNC @identity:
-        kArgInteger,                     // argi a || argi 5
+        kArgInteger,                     // argi a
         kArgIntegerArray,                // argia a
-        kArgReal,                        // argr a || argr 5.0
+        kArgReal,                        // argr a
         kArgRealArray,                   // argra a
         kReturnInteger,                  // ret a || ret 5
         kReturnIntegerArray,             // ret a
