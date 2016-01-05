@@ -1,11 +1,11 @@
-func void factor(int a, real[5] b) {
+func int factor(int a, real[5] b) {
     write(a);
     write(b);
-    return b;
+    return 3;
 }
 
-func void facto(int a, real[5] b) {
+func real[5] facto(int a, real[5] b) {
     write(a);
     write(b);
-    return b;
+    return a;
 }

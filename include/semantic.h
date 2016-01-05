@@ -24,7 +24,7 @@ public:
             if (child_type(i) == Token::Type::kFunction) {
                 analyse_function(i);
             } else if (child_type(i) == Token::Type::kStatement) {
-                analyse_statement(i);
+                analyse_statement(i, Symbol("__global__"));
             }
         }
         return Token(Token::Type::kProgram, current_->token().position());
@@ -94,7 +94,8 @@ public:
                     break;
             }
         }
-        tree_.define(Symbol(identity.content(), Symbol::convert_token_type(declare_keyword.type()), parameters_symbol));
+        Symbol function_symbol = Symbol(identity.content(), Symbol::convert_token_type(declare_keyword.type()), parameters_symbol);
+        tree_.define(function_symbol);
         tree_.push();  // 作用域递增
         for (int i = 0; i < (int)parameters_symbol.size(); ++i) {
             try {
@@ -112,7 +113,7 @@ public:
             current_ = child(offset++);
             int statements_offset = 0;
             while (statements_offset < children_size() && child_type(statements_offset) == Token::Type::kStatement) {
-                analyse_statement(statements_offset++);
+                analyse_statement(statements_offset++, function_symbol);
             }
             current_ = current_->parent();
         }
@@ -124,7 +125,7 @@ public:
     }
 
     // 解析语句
-    Token analyse_statement(const int &pos) {
+    Token analyse_statement(const int &pos, const Symbol &function_symbol) {
         current_ = child(pos);
 
         Token result;
@@ -142,7 +143,7 @@ public:
             case Token::Type::kDeclareStatement:
                 break;
             case Token::Type::kReturnStatement:
-                result = analyse_return_statement(0);
+                result = analyse_return_statement(0, function_symbol);
                 break;
             default:
                 break;
@@ -153,9 +154,33 @@ public:
     }
 
     // 解析 return 语句
-    Token analyse_return_statement(const int &pos) {
+    Token analyse_return_statement(const int &pos, const Symbol &function_symbol) {
         current_ = child(pos);
+
         Token result = analyse_literal(0);
+        if (result.type() == Token::Type::kIdentity) {
+            try {
+                const Symbol &identity = tree_.resolve(result.content());
+                if (identity.type() != function_symbol.ret_type()) {
+                    add_error_messages(result.position(), "return 语句返回的 \"" + identity.name() + "\" 与函数 \"" + function_symbol.name() + "\" 的返回类型不一致");
+                    throw scope_critical_error();
+                }
+            } catch (const scope_not_found &e) {
+                add_error_messages(result.position(), "未定义的变量 \"" + result.content() + "\" 不能用于 return 语句");
+                throw scope_critical_error();
+            }
+        } else if (result.type() == Token::Type::kIntegerLiteral) {
+            if (function_symbol.ret_type() != Symbol::Type::kInt) {
+                add_error_messages(result.position(), "return 语句返回的 \"" + result.content() + "\" 与函数 \"" + function_symbol.name() + "\" 的返回类型不一致");
+                throw scope_critical_error();
+            }
+        } else if (result.type() == Token::Type::kRealLiteral) {
+            if (function_symbol.ret_type() != Symbol::Type::kReal) {
+                add_error_messages(result.position(), "return 语句返回的 \"" + result.content() + "\" 与函数 \"" + function_symbol.name() + "\" 的返回类型不一致");
+                throw scope_critical_error();
+            }
+        }
+
         // 生成 IR
         build_return_statement_ir(result);
 
