@@ -58,7 +58,8 @@ public:
 
         kStatement,          // 语句
         kFunction,           // 函数
-        kFunctionParameters, // 函数参数
+        kFunctionParameters, // 函数所有参数
+        kFunctionParameter,  // 函数单个参数
         kFunctionStatements, // 函数体
         kFunctionReturnStatement,  // 函数返回语句
 

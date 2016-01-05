@@ -76,17 +76,26 @@ void Parser::parse_function() {
     match(Token::Type::kLeftParen);
     current_ = current_->add_child(Token::Type::kFunctionParameters, forward_token());
     if (forward_token().type() != Token::Type::kRightParen) {
+
+        // 解析第一个参数
+        current_ = current_->add_child(Token::Type::kFunctionParameter, forward_token());
         parse_declare_keyword();
         current_->add_child(forward_token());
         match(Token::Type::kIdentity);
+        current_ = current_->parent();
+
+        // 解析第二个及以后的函数参数
         while (true) {
             if (forward_token().type() != Token::Type::kComma) {
                 break;
             }
             match(Token::Type::kComma);
+
+            current_ = current_->add_child(Token::Type::kFunctionParameter, forward_token());
             parse_declare_keyword();
             current_->add_child(forward_token());
             match(Token::Type::kIdentity);
+            current_ = current_->parent();
         }
     }
     current_ = current_->parent();
