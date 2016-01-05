@@ -71,7 +71,10 @@ void Parser::parse_function() {
     parse_declare_keyword();
     current_->add_child(forward_token());
     match(Token::Type::kIdentity);
+
+    // 解析函数参数
     match(Token::Type::kLeftParen);
+    current_ = current_->add_child(Token::Type::kFunctionParameters, forward_token());
     if (forward_token().type() != Token::Type::kRightParen) {
         parse_declare_keyword();
         current_->add_child(forward_token());
@@ -86,14 +89,19 @@ void Parser::parse_function() {
             match(Token::Type::kIdentity);
         }
     }
+    current_ = current_->parent();
     match(Token::Type::kRightParen);
+
+    // 解析函数体
     match(Token::Type::kLeftBrace);
+    current_ = current_->add_child(Token::Type::kFunctionStatements, forward_token());
     while (true) {
         if (forward_token(1).type() == Token::Type::kRightBrace) {
             break;
         }
         parse_statement();
     }
+    current_ = current_->parent();
     match(Token::Type::kRightBrace);
 
     current_ = current_->parent();

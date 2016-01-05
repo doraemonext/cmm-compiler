@@ -44,6 +44,9 @@ const char *Token::token_type_name(const Type &type) {
         case Type::kFunctions: return "functions";
         case Type::kStatement: return "statement";
         case Type::kFunction: return "function";
+        case Type::kFunctionParameters: return "function_parameters";
+        case Type::kFunctionStatements: return "function_statements";
+        case Type::kFunctionReturnStatement: return "function_return_statement";
         case Type::kIfStatement: return "if_statement";
         case Type::kWhileStatement: return "while_statement";
         case Type::kReadStatement: return "read_statement";

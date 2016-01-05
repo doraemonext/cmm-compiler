@@ -58,6 +58,9 @@ public:
 
         kStatement,          // 语句
         kFunction,           // 函数
+        kFunctionParameters, // 函数参数
+        kFunctionStatements, // 函数体
+        kFunctionReturnStatement,  // 函数返回语句
 
         kIfStatement,        // if 语句
         kWhileStatement,     // while 语句
@@ -77,6 +80,8 @@ public:
         kFactor,             // 元素
         kArray,              // 数组
         kFunctionCall,       // 函数调用
+
+        kResult,             // 计算结果
 
         kNone,               // 空类型
     };

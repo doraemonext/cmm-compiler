@@ -22,9 +22,9 @@ int main() {
     Semantic semantic(parser.ast());
     semantic.analyse();
 
-    std::vector<IR> ir;
-    ir.push_back(IR(OpCode::kAdd, Var(Var::Type::kInt, 10), Var(Var::Type::kReal, 10.0), Var(Var::Type::kInt, 10)));
-    cout << ir[0] << endl;
+    // std::vector<IR> ir;
+    // ir.push_back(IR(OpCode::kAdd, Var(Var::Type::kInt, 10), Var(Var::Type::kReal, 10.0), Var(Var::Type::kInt, 10)));
+    // cout << ir[0] << endl;
 
 //    ScopeTree *tree = new ScopeTree();
 //

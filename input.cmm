@@ -1,21 +1,5 @@
-/**
-aafasdfasdasd
-asfd
-*/
-
-func int factor(int first, int second) {
-    int sum, result;
-    sum = first + second;
-    result = factor(second, sum);
-    return result;
-}
-/* asdfasdf */
-func int main() {
-    int a, b;
-    int c;
-    read(a);
-    read(b);
-    c = factor(a, b);
-    write(c);
-    return 0;
+func real[5] factor(int a, int b) {
+    write(a);
+    write(b);
+    return b;
 }
