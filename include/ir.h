@@ -13,10 +13,7 @@ public:
         kArgIntegerArray,                // argia a
         kArgReal,                        // argr a
         kArgRealArray,                   // argra a
-        kReturnInteger,                  // ret a || ret 5
-        kReturnIntegerArray,             // ret a
-        kReturnReal,                     // ret a || ret 5.0
-        kReturnRealArray,                // ret a
+        kReturn,                         // ret a || ret 5
         kEndFunc,                        // ENDFUNC
         kCall,                           // $sum
 
@@ -146,17 +143,8 @@ public:
             case Type::kArgRealArray:
                 os << "argra " << pcode.first();
                 break;
-            case Type::kReturnInteger:
-                os << "reti " << pcode.first();
-                break;
-            case Type::kReturnIntegerArray:
-                os << "retia " << pcode.first();
-                break;
-            case Type::kReturnReal:
-                os << "retr " << pcode.first();
-                break;
-            case Type::kReturnRealArray:
-                os << "retra " << pcode.first();
+            case Type::kReturn:
+                os << "ret " << pcode.first();
                 break;
             case Type::kEndFunc:
                 os << "ENDFUNC @" << pcode.first();

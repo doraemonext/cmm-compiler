@@ -108,8 +108,13 @@ public:
         build_function_ir_start(identity);      // 生成函数定义起始位置 IR
         build_function_ir_args(parameters);     // 生成函数形参 IR
 
-        while (offset < children_size() && child_type(offset) == Token::Type::kFunctionStatements) {
-            analyse_statement(offset++);
+        if (offset < children_size() && child_type(offset) == Token::Type::kFunctionStatements) {
+            current_ = child(offset++);
+            int statements_offset = 0;
+            while (statements_offset < children_size() && child_type(statements_offset) == Token::Type::kStatement) {
+                analyse_statement(statements_offset++);
+            }
+            current_ = current_->parent();
         }
         tree_.pop(); // 作用域递减
 
@@ -118,8 +123,44 @@ public:
         return Token(Token::Type::kFunction, current_->token().position());
     }
 
+    // 解析语句
     Token analyse_statement(const int &pos) {
-        return Token(Token::Type::kStatement, current_->token().position());
+        current_ = child(pos);
+
+        Token result;
+        switch (child_type(0)) {
+            case Token::Type::kIfStatement:
+                break;
+            case Token::Type::kWhileStatement:
+                break;
+            case Token::Type::kReadStatement:
+                break;
+            case Token::Type::kWriteStatement:
+                break;
+            case Token::Type::kAssignStatement:
+                break;
+            case Token::Type::kDeclareStatement:
+                break;
+            case Token::Type::kReturnStatement:
+                result = analyse_return_statement(0);
+                break;
+            default:
+                break;
+        }
+
+        current_ = current_->parent();
+        return result;
+    }
+
+    // 解析 return 语句
+    Token analyse_return_statement(const int &pos) {
+        current_ = child(pos);
+        Token result = analyse_literal(0);
+        // 生成 IR
+        build_return_statement_ir(result);
+
+        current_ = current_->parent();
+        return result;
     }
 
     // 分析定义关键字
@@ -155,7 +196,23 @@ public:
 
     // 解析标识符
     Token analyse_identity(const int &pos) {
-        return child(pos)->token();
+        Token result = child(pos)->token();
+        if (result.type() == Token::Type::kIdentity) {
+            return result;
+        } else {
+            add_error_messages(result.position(), "无效的标识符\"" + result.content() + "\", 仅允许变量");
+            throw scope_critical_error();
+        }
+    }
+
+    Token analyse_literal(const int &pos) {
+        Token result = child(pos)->token();
+        if (result.type() == Token::Type::kIdentity || result.type() == Token::Type::kIntegerLiteral || result.type() == Token::Type::kRealLiteral) {
+            return result;
+        } else {
+            add_error_messages(result.position(), "无效的标识符\"" + result.content() + "\", 仅允许变量, 整数或实数类型");
+            throw scope_critical_error();
+        }
     }
 
     void print_error_messages() const {
@@ -234,6 +291,10 @@ private:
 
     void build_function_ir_end(const Token &identity) {
         ir_.add(PCode(PCode::Type::kEndFunc, identity.content(), ir_indent_));
+    }
+
+    void build_return_statement_ir(const Token &literal) {
+        ir_.add(PCode(PCode::Type::kReturn, literal.content(), ir_indent_));
     }
 };
 
