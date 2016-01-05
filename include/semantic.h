@@ -30,7 +30,7 @@ public:
     }
 
     Token analyse_function(const int &pos) {
-        current_ = child(pos); 
+        current_ = child(pos);
 
 //        int offset = 0;
 //        Token declare_keyword = analyse_declare_keyword(child(offset++));
@@ -67,7 +67,7 @@ private:
     AbstractSyntaxNode *root_;
     AbstractSyntaxNode *current_;
     ScopeTree tree_;
-    std::vector<IR> ir_;
+    std::vector<PCode> ir_;
 
     AbstractSyntaxNode *child(int offset) {
         return current_->children()[offset];

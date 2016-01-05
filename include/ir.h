@@ -4,97 +4,303 @@
 #include <vector>
 #include <string>
 
-enum class OpCode {
-    kAdd,
-    kSub,
-    kMul,
-    kDiv,
+class PCode {
+public:
+    enum class Type {
+        kNone = 0,
+        kStartFunc,                      // FUNC @identity:
+        kArgInteger,                     // argi a || argi 5
+        kArgIntegerArray,                // argia a
+        kArgReal,                        // argr a || argr 5.0
+        kArgRealArray,                   // argra a
+        kReturnInteger,                  // ret a || ret 5
+        kReturnIntegerArray,             // ret a
+        kReturnReal,                     // ret a || ret 5.0
+        kReturnRealArray,                // ret a
+        kEndFunc,                        // ENDFUNC
+        kCall,                           // $sum
 
-    kGT,
-    kGTE,
-    kLT,
-    kLTE,
-    kEqual,
-    kNotEqual,
+        kLabel,                          // Label1:
 
-    kVarInteger,
-    kVarReal,
+        kVarInteger,                     // vari a
+        kVarIntegerArray,                // varia a, b || varia a, 5
+        kVarReal,                        // varr b
+        kVarRealArray,                   // varra a, b || varra a, 5
 
-    kJmp,
-    kJmpZero,
-    kJmpNotZero,
+        kPushInteger,                    // pushi a || pushi 5
+        kPushReal,                       // pushr a || pushr 6.0
 
-    kAssign,
-    kRead,
-    kWrite,
-    kExit,
+        kPop,                            // pop
+        kPopInteger,                     // popi a
+        kPopIntegerArray,                // popia a, 6
+        kPopReal,                        // popr a
+        kPopRealArray,                   // popra a, 6
 
-    kFunc,
-    kArg,
-    kReturn,
-    kCall,
-};
+        kAdd,                            // add
+        kSub,                            // sub
+        kMul,                            // mul
+        kDiv,                            // div
+        kMod,                            // mod
 
-struct Var {
-    enum class Type { kNone = 0, kInt, kReal, kTemp, kLabel };
+        kCompareEqual,                   // cmpeq
+        kCompareNotEqual,                // cmpne
+        kCompareGreaterThan,             // cmpgt
+        kCompareLessThan,                // cmplt
+        kCompareGreaterEqual,            // cmpge
+        kCompareLessEqual,               // cmple
 
-    Var() : type(Type::kNone), int_value(0), real_value(0.0), temp_var(0), label("") { }
+        kAnd,                            // and
+        kOr,                             // or
+        kNot,                            // not
+        kNegative,                       // neg
 
-    Var(Type type, int value) : type(type), int_value(0), real_value(0.0), temp_var(0), label("") {
-        if (type == Type::kInt) {
-            int_value = value;
-        } else {
-            temp_var = value;
-        }
+        kJump,                           // jmp
+        kJumpZero,                       // jz
+        kJumpNotZero,                    // jnz
+
+        kPrint,                          // print
+        kReadInt,                        // readi
+        kReadReal,                       // readr
+
+        kExit,                           // exit
+    };
+
+    PCode(const int &indent = 4) : type_(Type::kNone), indent_(indent) { }
+
+    PCode(const Type &type, const int &indent = 4) : type_(type), indent_(indent) { }
+
+    PCode(const Type &type, const std::string &first, const int &indent = 4) : type_(type), first_(first), indent_(indent) { }
+
+    PCode(const Type &type, const std::string &first, const std::string &second, const int &indent = 4) : type_(type), first_(first), second_(second), indent_(indent) { }
+
+    PCode(const Type &type, const std::string &first, const std::string &second, const std::string &third, const int &indent = 4) : type_(type), first_(first), second_(second), third_(third), indent_(indent) { }
+
+    const Type &type() const {
+        return type_;
     }
 
-    Var(Type type, double value) : type(type), int_value(0), real_value(value), temp_var(0), label("") { }
+    const std::string &first() const {
+        return first_;
+    }
 
-    Var(Type type, std::string value) : type(type), int_value(0), real_value(0.0), temp_var(0), label(value) { }
+    const std::string &second() const {
+        return second_;
+    }
 
-    friend std::ostream &operator << (std::ostream &os, const Var &var) {
-        if (var.type == Type::kInt) {
-            os << var.int_value;
-        } else if (var.type == Type::kReal) {
-            os << var.real_value;
-        } else if (var.type == Type::kTemp) {
-            os << "T" << var.temp_var;
-        } else if (var.type == Type::kLabel) {
-            os << var.label;
+    const std::string &third() const {
+        return third_;
+    }
+
+    int indent() const {
+        return indent_;
+    }
+
+    void set(const Type &type) {
+        type_ = type;
+    }
+
+    void set(const Type &type, const std::string &first) {
+        type_ = type;
+        first_ = first;
+    }
+
+    void set(const Type &type, const std::string &first, const std::string &second) {
+        type_ = type;
+        first_ = first;
+        second_ = second;
+    }
+
+    void set(const Type &type, const std::string &first, const std::string &second, const std::string &third) {
+        type_ = type;
+        first_ = first;
+        second_ = second;
+        third_ = third;
+    }
+
+    void set_indent(const int &indent) {
+        indent_ = indent;
+    }
+
+    friend std::ostream &operator << (std::ostream &os, const PCode &pcode) {
+        for (int i = 0; i < pcode.indent(); ++i) {
+            os << " ";
+        }
+        switch (pcode.type()) {
+            case Type::kNone:
+                os << "none";
+                break;
+            case Type::kStartFunc:
+                os << "FUNC @" << pcode.first() << ":";
+                break;
+            case Type::kArgInteger:
+                os << "argi " << pcode.first();
+                break;
+            case Type::kArgIntegerArray:
+                os << "argia " << pcode.first();
+                break;
+            case Type::kArgReal:
+                os << "argr " << pcode.first();
+                break;
+            case Type::kArgRealArray:
+                os << "argra " << pcode.first();
+                break;
+            case Type::kReturnInteger:
+                os << "reti " << pcode.first();
+                break;
+            case Type::kReturnIntegerArray:
+                os << "retia " << pcode.first();
+                break;
+            case Type::kReturnReal:
+                os << "retr " << pcode.first();
+                break;
+            case Type::kReturnRealArray:
+                os << "retra " << pcode.first();
+                break;
+            case Type::kEndFunc:
+                os << "ENDFUNC @" << pcode.first();
+                break;
+            case Type::kCall:
+                os << "$" << pcode.first();
+                break;
+            case Type::kLabel:
+                os << pcode.first() << ":";
+                break;
+            case Type::kVarInteger:
+                os << "vari " << pcode.first();
+                break;
+            case Type::kVarIntegerArray:
+                os << "varia " << pcode.first() << ", " << pcode.second();
+                break;
+            case Type::kVarReal:
+                os << "varr " << pcode.first();
+                break;
+            case Type::kVarRealArray:
+                os << "varra " << pcode.first() << ", " << pcode.second();
+                break;
+            case Type::kPushInteger:
+                os << "pushi " << pcode.first();
+                break;
+            case Type::kPushReal:
+                os << "pushr " << pcode.first();
+                break;
+            case Type::kPop:
+                os << "pop";
+                break;
+            case Type::kPopInteger:
+                os << "popi " << pcode.first();
+                break;
+            case Type::kPopIntegerArray:
+                os << "popia " << pcode.first() << ", " << pcode.second();
+                break;
+            case Type::kPopReal:
+                os << "popr " << pcode.first();
+                break;
+            case Type::kPopRealArray:
+                os << "popra " << pcode.first() << ", " << pcode.second();
+                break;
+            case Type::kAdd:
+                os << "add";
+                break;
+            case Type::kSub:
+                os << "sub";
+                break;
+            case Type::kMul:
+                os << "mul";
+                break;
+            case Type::kDiv:
+                os << "div";
+                break;
+            case Type::kMod:
+                os << "mod";
+                break;
+            case Type::kCompareEqual:
+                os << "cmpeq";
+                break;
+            case Type::kCompareNotEqual:
+                os << "cmpne";
+                break;
+            case Type::kCompareGreaterThan:
+                os << "cmpgt";
+                break;
+            case Type::kCompareLessThan:
+                os << "cmplt";
+                break;
+            case Type::kCompareGreaterEqual:
+                os << "cmpge";
+                break;
+            case Type::kCompareLessEqual:
+                os << "cmple";
+                break;
+            case Type::kAnd:
+                os << "and";
+                break;
+            case Type::kOr:
+                os << "or";
+                break;
+            case Type::kNot:
+                os << "not";
+                break;
+            case Type::kNegative:
+                os << "neg";
+                break;
+            case Type::kJump:
+                os << "jmp";
+                break;
+            case Type::kJumpZero:
+                os << "jz";
+                break;
+            case Type::kJumpNotZero:
+                os << "jnz";
+                break;
+            case Type::kPrint:
+                os << "print";
+                break;
+            case Type::kReadInt:
+                os << "readi";
+                break;
+            case Type::kReadReal:
+                os << "readr";
+                break;
+            case Type::kExit:
+                os << "exit " << pcode.first();
+                break;
         }
         return os;
     }
 
-    Type type;
-    int int_value;
-    double real_value;
-    int temp_var;
-    std::string label;
+private:
+    Type type_;
+    std::string first_;
+    std::string second_;
+    std::string third_;
+    int indent_;
 };
 
 class IR {
 public:
-    IR(OpCode op, Var dest, Var src1, Var src2) : op(op), dest(dest), src1(src1), src2(src2) { }
+    IR() {}
 
-    static const char *ir_type_name(const IR &ir) {
-        switch (ir.op) {
-            case OpCode::kAdd: return "+";
-            case OpCode::kSub: return "-";
-            case OpCode::kMul: return "*";
-            case OpCode::kDiv: return "/";
-            default: throw std::invalid_argument("received invalid IR type value");
-        }
+    void add(const PCode &pcode) {
+        ir_.push_back(pcode);
+    }
+
+    const PCode &at(int pos) const {
+        return ir_.at((unsigned long)pos);
+    }
+
+    int size() const {
+        return (int)ir_.size();
     }
 
     friend std::ostream &operator << (std::ostream &os, const IR &ir) {
-        os << "(" << ir_type_name(ir) << ", " << ir.dest << ", " << ir.src1 << ", " << ir.src2 << ")";
+        for (int i = 0; i < ir.size(); ++i) {
+            os << ir.at(i) << std::endl;
+        }
         return os;
     }
 
-    OpCode op;
-    Var dest;
-    Var src1;
-    Var src2;
+private:
+    std::vector<PCode> ir_;
 };
 
 #endif //CMM_ICODE_H

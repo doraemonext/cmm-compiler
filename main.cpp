@@ -17,10 +17,15 @@ int main() {
     Lexer lexer(buffer.str());
     Parser parser(lexer, 2);
     parser.parse_program();
-    parser.print_ast();
+    // parser.print_ast();
 
     Semantic semantic(parser.ast());
     semantic.analyse();
+
+    IR ir;
+    ir.add(PCode(PCode::Type::kStartFunc, "factor", 0));
+    ir.add(PCode(PCode::Type::kReturnIntegerArray, "a"));
+    std::cout << ir;
 
     // std::vector<IR> ir;
     // ir.push_back(IR(OpCode::kAdd, Var(Var::Type::kInt, 10), Var(Var::Type::kReal, 10.0), Var(Var::Type::kInt, 10)));
