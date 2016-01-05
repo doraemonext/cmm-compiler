@@ -22,7 +22,7 @@ comparison_op        :        LT | LTE | GT | GTE | EQUAL | NEQUAL ;
 add_op               :        PLUS | MINUS ;
 mul_op               :        TIMES | DIVIDE ;
 factor               :        REAL_LITERAL | INTEGER_LITERAL | ID | LPAREN expression RPAREN | ID array | function_call ;
-array                :        LBRACKET (INTEGER_LITERAL | ID) RBRACKET ;
+array                :        LBRACKET INTEGER_LITERAL RBRACKET ;
 function_call        :        ID LPAREN ((ID | REAL_LITERAL | INTEGER_LITERAL) (COMMA (ID | REAL_LITERAL | INTEGER_LITERAL)*)?) RPAREN ;
 
 FUNC                 :        'func' ;

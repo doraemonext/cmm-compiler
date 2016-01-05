@@ -489,7 +489,7 @@ void Parser::parse_factor() {
 }
 
 // 解析数组
-// array: LBRACKET (INTEGER_LITERAL | ID) RBRACKET ;
+// array: LBRACKET INTEGER_LITERAL RBRACKET ;
 void Parser::parse_array() {
     current_ = current_->add_child(Token::Type::kArray, forward_token());
     std::stringstream buffer;
@@ -498,11 +498,8 @@ void Parser::parse_array() {
     if (forward_token().type() == Token::Type::kIntegerLiteral) {
         current_->add_child(forward_token());
         match(Token::Type::kIntegerLiteral);
-    } else if (forward_token().type() == Token::Type::kIdentity) {
-        current_->add_child(forward_token());
-        match(Token::Type::kIdentity);
     } else {
-        buffer << "无效的标识符 \"" << forward_token().content() << "\", 数组括号中仅允许整数常量和变量";
+        buffer << "无效的标识符 \"" << forward_token().content() << "\", 数组括号中仅允许整数常量";
         throw parser_exception(forward_token().position(), buffer.str());
     }
     match(Token::Type::kRightBracket);

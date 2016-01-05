@@ -196,6 +196,9 @@ public:
                 default:
                     break;
             }
+
+            // 生成 IR
+            build_declare_statement_ir(declare_keyword, last);
         }
 
         current_ = current_->parent();
@@ -250,16 +253,21 @@ public:
             } else if (child_type(0) == Token::Type::kVoid) {
                 result = Token(Token::Type::kVoid, child(0)->token().position());
             } else {
-                add_error_messages(child(0)->token().position(), "错误的函数定义类型 \"" + std::string(Token::token_type_name(child_type(0))) + "\"");
+                add_error_messages(child(0)->token().position(), "错误的定义类型 \"" + std::string(Token::token_type_name(child_type(0))) + "\"");
                 throw scope_critical_error();
             }
         } else {
+            if (child(1)->child(0)->token().type() != Token::Type::kIntegerLiteral) {
+                add_error_messages(child(0)->token().position(), "错误的数组大小, 仅允许使用整数");
+                throw scope_critical_error();
+            }
+
             if (child_type(0) == Token::Type::kInt) {
                 result = Token(Token::Type::kIntArray, child(1)->child(0)->token().content(), current_->token().position());
             } else if (child_type(0) == Token::Type::kReal) {
                 result = Token(Token::Type::kRealArray, child(1)->child(0)->token().content(), current_->token().position());
             } else {
-                add_error_messages(child(0)->token().position(), "错误的函数定义类型 \"" + std::string(Token::token_type_name(child_type(0))) + "\"");
+                add_error_messages(child(0)->token().position(), "错误的定义类型 \"" + std::string(Token::token_type_name(child_type(0))) + "\"");
                 throw scope_critical_error();
             }
         }
@@ -369,6 +377,25 @@ private:
 
     void build_return_statement_ir(const Token &literal) {
         ir_.add(PCode(PCode::Type::kReturn, literal.content(), ir_indent_));
+    }
+
+    void build_declare_statement_ir(const Token &declare_keyword, const Token &identity) {
+        switch (declare_keyword.type()) {
+            case Token::Type::kInt:
+                ir_.add(PCode(PCode::Type::kVarInteger, identity.content(), ir_indent_));
+                break;
+            case Token::Type::kIntArray:
+                ir_.add(PCode(PCode::Type::kVarIntegerArray, identity.content(), declare_keyword.content(), ir_indent_));
+                break;
+            case Token::Type::kReal:
+                ir_.add(PCode(PCode::Type::kVarReal, identity.content(), ir_indent_));
+                break;
+            case Token::Type::kRealArray:
+                ir_.add(PCode(PCode::Type::kVarRealArray, identity.content(), declare_keyword.content(), ir_indent_));
+                break;
+            default:
+                break;
+        }
     }
 };
 
