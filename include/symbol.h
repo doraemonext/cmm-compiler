@@ -60,12 +60,20 @@ public:
         return type_;
     }
 
+    const char *type_name() const {
+        return symbol_type_name(type_);
+    }
+
     void set_type(const Type &type) {
         type_ = type;
     }
 
     Type ret_type() const {
         return ret_type_;
+    }
+
+    const char *ret_type_name() const {
+        return symbol_type_name(ret_type_);
     }
 
     void set_ret_type(const Type &ret_type) {
@@ -137,6 +145,18 @@ public:
                 return Type::kVoid;
             default:
                 throw std::invalid_argument("cannot convert to Symbol::Type from Token::Type with received parameter");
+        }
+    }
+
+    static const char *symbol_type_name(const Type &type) {
+        switch (type) {
+            case Type::kNone: return "none";
+            case Type::kFunction: return "function";
+            case Type::kInt: return "int";
+            case Type::kIntArray: return "int_array";
+            case Type::kReal: return "real";
+            case Type::kRealArray: return "real_array";
+            case Type::kVoid: return "void";
         }
     }
 
