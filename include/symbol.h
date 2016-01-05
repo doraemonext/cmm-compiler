@@ -132,6 +132,7 @@ public:
     }
 
     static const Type convert_token_type(const Token::Type &token_type) {
+        std::cout << Token::token_type_name(token_type) << std::endl;
         switch (token_type) {
             case Token::Type::kFunction:
                 return Type::kFunction;

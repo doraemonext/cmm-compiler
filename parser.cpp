@@ -472,13 +472,17 @@ void Parser::parse_factor() {
         if (forward_token(2).type() == Token::Type::kLeftParen) {
             parse_function_call();
         } else {
-            current_ = current_->add_child(Token::Type::kIdentityArray, forward_token());
-            current_->add_child(forward_token());
-            match(Token::Type::kIdentity);
-            if (forward_token().type() == Token::Type::kLeftBracket) {
+            if (forward_token(2).type() == Token::Type::kLeftBracket) {
+                current_ = current_->add_child(Token::Type::kIdentityArray, forward_token());
+                current_->add_child(forward_token());
+                match(Token::Type::kIdentity);
                 parse_array();
+                current_ = current_->parent();
+            } else {
+                current_->add_child(forward_token());
+                match(Token::Type::kIdentity);
             }
-            current_ = current_->parent();
+
         }
     } else if (forward_token().type() == Token::Type::kLeftParen) {
         match(Token::Type::kLeftParen);

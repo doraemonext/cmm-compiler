@@ -1,2 +1,3 @@
 int a, b;
-a = b;
+real c;
+c = c + 6.0 * 7;

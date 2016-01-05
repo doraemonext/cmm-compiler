@@ -196,6 +196,11 @@ public:
 
         Token right = analyse_expression(offset++);
 
+        if (identity_symbol.type() != Symbol::convert_token_type(right.type())) {
+            add_error_messages(right.position(), "算符两侧表达式类型不同, 无法运算");
+            throw scope_critical_error();
+        }
+
         // 生成 IR
         build_assign_statement_ir(left_identity, array_offset, identity_symbol.type());
 
@@ -388,6 +393,12 @@ public:
         while (offset < children_size()) {
             Token op = analyse_add_op(offset++);
             Token term = analyse_term(offset++);
+
+            if (result.type() != term.type()) {
+                add_error_messages(term.position(), "算符两侧表达式类型不同, 无法运算");
+                throw scope_critical_error();
+            }
+
             build_expression_ir(op);
         }
 
@@ -404,7 +415,13 @@ public:
         result = analyse_factor(offset++);
         while (offset < children_size()) {
             Token op = analyse_mul_op(offset++);
-            Token term = analyse_factor(offset++);
+            Token factor = analyse_factor(offset++);
+
+            if (result.type() != factor.type()) {
+                add_error_messages(factor.position(), "算符两侧表达式类型不同, 无法运算");
+                throw scope_critical_error();
+            }
+
             build_term_ir(op);
         }
 
