@@ -27,7 +27,11 @@ Symbol &ScopeNode::resolve(const std::string &name) {
 }
 
 void ScopeNode::define(const Symbol &symbol) {
-    symbols_.insert(std::pair<std::string, Symbol>(symbol.name(), symbol));
+    if (symbols_.find(symbol.name()) == symbols_.end()) {
+        symbols_.insert(std::pair<std::string, Symbol>(symbol.name(), symbol));
+    } else {
+        throw scope_name_exists();
+    }
 }
 
 ScopeNode *ScopeNode::get_enclosing_scope() const {
@@ -77,6 +81,10 @@ void ScopeTree::push() {
 
 void ScopeTree::pop() {
     current_ = current_->get_enclosing_scope();
+}
+
+ScopeNode *ScopeTree::current() {
+    return current_;
 }
 
 void ScopeTree::print() const {

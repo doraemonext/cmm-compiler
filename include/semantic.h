@@ -2,6 +2,7 @@
 #define CMM_SEMANTIC_H
 
 #include <iostream>
+#include <vector>
 #include "ast.h"
 #include "symbol.h"
 #include "scope.h"
@@ -20,47 +21,144 @@ public:
 
     Token analyse_program() {
         for (int i = 0; i < children_size(); ++i) {
-            if (current_token_type() == Token::Type::kFunction) {
+            if (child_type(i) == Token::Type::kFunction) {
                 analyse_function(i);
-            } else if (current_token_type() == Token::Type::kStatement) {
+            } else if (child_type(i) == Token::Type::kStatement) {
                 analyse_statement(i);
             }
         }
         return Token(Token::Type::kProgram, current_->token().position());
     }
 
+    // 分析函数
     Token analyse_function(const int &pos) {
         current_ = child(pos);
 
-//        int offset = 0;
-//        Token declare_keyword = analyse_declare_keyword(child(offset++));
-//        Token identity = analyse_declare_identity(child(offset++));
-//
-//        std::vector<std::pair<Token, Token> > parameter;
-//        while (offset < children_size() && child_type(offset) != Token::Type::kStatement) {
-//            Token first = down_walk_up(child(offset++));
-//            Token second = down_walk_up(child(offset++));
-//            parameter.push_back(std::pair<Token, Token>(first, second));
-//        }
-//
-//        Token return_statement;
-//        if (offset < children_size()) {
-//            while (offset < children_size()) {
-//                Token statement = down_walk_up(child(offset++));
-//                if (statement.type() == Token::Type::kReturnStatement) {
-//                    return_statement = statement;
-//                }
-//            }
-//        } else {
-//            return_statement = Token(Token::Type::kVoid, current_->token().position());
-//        }
-        return Token(Token::Type::kFunction, current_->token().position());
+        int offset = 0;
+        Token declare_keyword = analyse_declare_keyword(offset++);
+        Token identity = analyse_identity(offset++);
+
+        // 查找重复函数名称
+        try {
+            tree_.resolve(identity.content());
+            add_error_messages(identity.position(), "重复定义的函数名称 \"" + std::string(identity.content()) + "\", 请尝试使用其他不冲突的函数名称");
+        } catch (const scope_not_found &e) { }
+
+        // 分析函数形参
+        std::vector<std::pair<Token, Token> > parameters;
+        if (child_type(offset) == Token::Type::kFunctionParameters) {
+            current_ = child(offset++);
+            int parameters_offset = 0;
+            while (parameters_offset < children_size() && child_type(parameters_offset) == Token::Type::kFunctionParameter) {
+                current_ = child(parameters_offset++);
+                Token first = analyse_declare_keyword(0);  // 函数形参定义关键字 Token
+                Token second = analyse_identity(1);        // 函数形参变量名 Token
+
+                // 检查使用 void 空类型的函数形参
+                if (first.type() == Token::Type::kVoid) {
+                    add_error_messages(first.position(), "函数形参不能使用空类型 \"void\"");
+                }
+                // 检查函数形参是否覆盖上层作用域的同名变量
+                try {
+                    tree_.resolve(second.content());
+                    add_warning_messages(second.position(), "函数 \"" + std::string(identity.content()) + "\" 的形参 \"" + second.content() + "\" 将会覆盖上层作用域的同名变量");
+                } catch (const scope_not_found &e) {}
+
+                parameters.push_back(std::pair<Token, Token>(first, second));
+                current_ = current_->parent();
+            }
+            current_ = current_->parent();
+        }
+
+        // 向全局作用域树种添加函数名称
+        std::vector<Symbol> parameters_symbol;
+        for (int i = 0; i < (int)parameters.size(); ++i) {
+            const Token &first = parameters[i].first;
+            const Token &second = parameters[i].second;
+            switch (first.type()) {
+                case Token::Type::kInt:
+                    parameters_symbol.push_back(Symbol(second.content(), 0, false));
+                    break;
+                case Token::Type::kIntArray:
+                    parameters_symbol.push_back(Symbol(second.content(), std::vector<int>(), false));
+                    break;
+                case Token::Type::kReal:
+                    parameters_symbol.push_back(Symbol(second.content(), 0.0, false));
+                    break;
+                case Token::Type::kRealArray:
+                    parameters_symbol.push_back(Symbol(second.content(), std::vector<double>(), false));
+                    break;
+                default:
+                    break;
+            }
+        }
+        tree_.define(Symbol(identity.content(), Symbol::convert_token_type(declare_keyword.type()), parameters_symbol));
+        tree_.push();  // 作用域递增
+        for (int i = 0; i < (int)parameters_symbol.size(); ++i) {
+            try {
+                tree_.define(parameters_symbol[i]);
+            } catch (const scope_name_exists &e) {
+                add_error_messages(parameters[i].second.position(), "函数 \"" + std::string(identity.content()) + "\" 的形参 \"" + parameters_symbol[i].name() + "\" 重复定义");
+            }
+        }
+
+        while (offset < children_size() && child_type(offset) == Token::Type::kFunctionStatements) {
+            analyse_statement(offset++);
+        }
+        tree_.pop(); // 作用域递减
 
         current_ = current_->parent();
+        return Token(Token::Type::kFunction, current_->token().position());
     }
 
     Token analyse_statement(const int &pos) {
         return Token(Token::Type::kStatement, current_->token().position());
+    }
+
+    // 分析定义关键字
+    Token analyse_declare_keyword(const int &pos) {
+        current_ = child(pos);
+        Token result;
+
+        if (current_->children().size() == 1) {
+            if (child_type(0) == Token::Type::kInt) {
+                result = Token(Token::Type::kInt, child(0)->token().position());
+            } else if (child_type(0) == Token::Type::kReal) {
+                result = Token(Token::Type::kReal, child(0)->token().position());
+            } else if (child_type(0) == Token::Type::kVoid) {
+                result = Token(Token::Type::kVoid, child(0)->token().position());
+            } else {
+                add_error_messages(child(0)->token().position(), "错误的函数定义类型 \"" + std::string(Token::token_type_name(child_type(0))) + "\"");
+            }
+        } else {
+            if (child_type(0) == Token::Type::kInt) {
+                result = Token(Token::Type::kIntArray, child(1)->child(0)->token().content(), current_->token().position());
+            } else if (child_type(0) == Token::Type::kReal) {
+                result = Token(Token::Type::kRealArray, child(1)->child(0)->token().content(), current_->token().position());
+            } else {
+                add_error_messages(child(0)->token().position(), "错误的函数定义类型 \"" + std::string(Token::token_type_name(child_type(0))) + "\"");
+            }
+        }
+
+        current_ = current_->parent();
+        return result;
+    }
+
+    // 解析标识符
+    Token analyse_identity(const int &pos) {
+        return child(pos)->token();
+    }
+
+    void print_error_messages() const {
+        for (int i = 0; i < error_messages_.size(); ++i) {
+            std::cout << "[错误] 第 " << error_messages_[i].first.row() << " 行 第 " << error_messages_[i].first.col() << " 列: " << error_messages_[i].second << std::endl;
+        }
+    }
+
+    void print_warning_messages() const {
+        for (int i = 0; i < warning_messages_.size(); ++i) {
+            std::cout << "[警告] 第 " << warning_messages_[i].first.row() << " 行 第 " << warning_messages_[i].first.col() << " 列: " << warning_messages_[i].second << std::endl;
+        }
     }
 
 private:
@@ -68,6 +166,8 @@ private:
     AbstractSyntaxNode *current_;
     ScopeTree tree_;
     std::vector<PCode> ir_;
+    std::vector<std::pair<Position, std::string> > error_messages_;
+    std::vector<std::pair<Position, std::string> > warning_messages_;
 
     AbstractSyntaxNode *child(int offset) {
         return current_->children()[offset];
@@ -83,6 +183,14 @@ private:
 
     Token::Type current_token_type() {
         return current_->token().type();
+    }
+
+    void add_error_messages(const Position &position, const std::string &message) {
+        error_messages_.push_back(std::pair<Position, std::string>(position, message));
+    }
+
+    void add_warning_messages(const Position &position, const std::string &message) {
+        warning_messages_.push_back(std::pair<Position, std::string>(position, message));
     }
 };
 

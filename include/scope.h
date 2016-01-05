@@ -7,6 +7,7 @@
 #include <list>
 #include "exceptions.h"
 #include "symbol.h"
+#include "token.h"
 
 class ScopeNode {
 public:
@@ -44,6 +45,8 @@ public:
     void push();
 
     void pop();
+
+    ScopeNode *current();
 
     void print() const;
 

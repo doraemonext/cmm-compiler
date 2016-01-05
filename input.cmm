@@ -1,4 +1,4 @@
-func real[5] factor(int a, int b) {
+func int[5] factor(int a, int a) {
     write(a);
     write(b);
     return b;

@@ -122,8 +122,10 @@ public:
     }
 
     friend std::ostream &operator << (std::ostream &os, const PCode &pcode) {
-        for (int i = 0; i < pcode.indent(); ++i) {
-            os << " ";
+        if (pcode.type() != Type::kStartFunc && pcode.type() != Type::kEndFunc && pcode.type() != Type::kLabel) {
+            for (int i = 0; i < pcode.indent(); ++i) {
+                os << " ";
+            }
         }
         switch (pcode.type()) {
             case Type::kNone:

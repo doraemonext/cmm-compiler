@@ -40,6 +40,10 @@ public:
         return children_;
     }
 
+    AbstractSyntaxNode *child(const int &pos) {
+        return children_[pos];
+    }
+
     AbstractSyntaxNode *parent() const {
         return parent_;
     }

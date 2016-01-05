@@ -4,12 +4,13 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include "token.h"
 
 class Symbol {
 public:
     enum class Type {
         kNone = 0,
-        kMethod,
+        kFunction,
         kInt,
         kIntArray,
         kReal,
@@ -19,31 +20,31 @@ public:
 
     // 针对函数的构造函数, 默认构造返回值为 void, 参数列表为空
     Symbol(const std::string &name, const Type &ret_type = Symbol::Type::kVoid, const std::vector<Symbol> &args = {}) :
-            name_(name), type_(Symbol::Type::kMethod), ret_type_(ret_type) {
+            name_(name), type_(Symbol::Type::kFunction), ret_type_(ret_type), is_assigned_(true) {
         value_.args = args;
     }
 
     // 针对 int 的构造函数
-    Symbol(const std::string &name, const int &value) :
-            name_(name), type_(Symbol::Type::kInt), ret_type_(Symbol::Type::kNone) {
+    Symbol(const std::string &name, const int &value, const bool &is_assigned) :
+            name_(name), type_(Symbol::Type::kInt), ret_type_(Symbol::Type::kNone), is_assigned_(is_assigned) {
         value_.int_value = value;
     }
 
     // 针对 int_array 的构造函数
-    Symbol(const std::string &name, const std::vector<int> &value) :
-            name_(name), type_(Symbol::Type::kIntArray), ret_type_(Symbol::Type::kNone) {
+    Symbol(const std::string &name, const std::vector<int> &value, const bool &is_assigned) :
+            name_(name), type_(Symbol::Type::kIntArray), ret_type_(Symbol::Type::kNone), is_assigned_(is_assigned) {
         value_.int_array = value;
     }
 
     // 针对 real 的构造函数
-    Symbol(const std::string &name, const double &value) :
-            name_(name), type_(Symbol::Type::kReal), ret_type_(Symbol::Type::kNone) {
+    Symbol(const std::string &name, const double &value, const bool &is_assigned) :
+            name_(name), type_(Symbol::Type::kReal), ret_type_(Symbol::Type::kNone), is_assigned_(is_assigned) {
         value_.real_value = value;
     }
 
     // 针对 real_array 的构造函数
-    Symbol(const std::string &name, const std::vector<double> &value) :
-            name_(name), type_(Symbol::Type::kRealArray), ret_type_(Symbol::Type::kNone) {
+    Symbol(const std::string &name, const std::vector<double> &value, const bool &is_assigned) :
+            name_(name), type_(Symbol::Type::kRealArray), ret_type_(Symbol::Type::kNone), is_assigned_(is_assigned) {
         value_.real_array = value;
     }
 
@@ -71,6 +72,10 @@ public:
         ret_type_ = ret_type;
     }
 
+    bool is_assigned() const {
+        return is_assigned_;
+    }
+
     const std::vector<Symbol> &args() const {
         return value_.args;
     }
@@ -93,22 +98,46 @@ public:
 
     void set_value(const std::vector<Symbol> &value) {
         value_.args = value;
+        is_assigned_ = true;
     }
 
     void set_value(const int &value) {
         value_.int_value = value;
+        is_assigned_ = true;
     }
 
     void set_value(const std::vector<int> &value) {
         value_.int_array = value;
+        is_assigned_ = true;
     }
 
     void set_value(const double &value) {
         value_.real_value = value;
+        is_assigned_ = true;
     }
 
     void set_value(const std::vector<double> &value) {
         value_.real_array = value;
+        is_assigned_ = true;
+    }
+
+    static const Type convert_token_type(const Token::Type &token_type) {
+        switch (token_type) {
+            case Token::Type::kFunction:
+                return Type::kFunction;
+            case Token::Type::kInt:
+                return Type::kInt;
+            case Token::Type::kReal:
+                return Type::kReal;
+            case Token::Type::kIntArray:
+                return Type::kIntArray;
+            case Token::Type::kRealArray:
+                return Type::kRealArray;
+            case Token::Type::kVoid:
+                return Type::kVoid;
+            default:
+                throw std::invalid_argument("cannot convert to Symbol::Type from Token::Type with received parameter");
+        }
     }
 
     // 测试函数
@@ -127,6 +156,7 @@ private:
     Type type_;
     Type ret_type_;
     UnionValue value_;
+    bool is_assigned_;
 };
 
 #endif //CMM_SYMBOL_H
