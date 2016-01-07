@@ -387,9 +387,8 @@ public:
             Token op = analyse_add_op(offset++);
             Token term = analyse_term(offset++);
 
-            if (result.type() != term.type()) {
-                add_error_messages(term.position(), "算符两侧表达式类型不同, 无法运算");
-                throw scope_critical_error();
+            if (result.type() == Token::Type::kReal || term.type() == Token::Type::kReal) {
+                result.set_type(Token::Type::kReal);
             }
 
             build_expression_ir(op);
@@ -410,9 +409,8 @@ public:
             Token op = analyse_mul_op(offset++);
             Token factor = analyse_factor(offset++);
 
-            if (result.type() != factor.type()) {
-                add_error_messages(factor.position(), "算符两侧表达式类型不同, 无法运算");
-                throw scope_critical_error();
+            if (result.type() == Token::Type::kReal || factor.type() == Token::Type::kReal) {
+                result.set_type(Token::Type::kReal);
             }
 
             build_term_ir(op);
@@ -425,7 +423,7 @@ public:
     // 解析元素
     Token analyse_factor(const int &pos) {
         current_ = child(pos);
-        Token result;
+        Token result, tmp;
         Token identity = child(0)->token();
         Symbol identity_symbol;
         std::string identity_string;
@@ -440,6 +438,7 @@ public:
                 ir_.add(PCode(PCode::Type::kPushReal, child(0)->token().content(), ir_indent_));
                 break;
             case Token::Type::kIdentity:
+                identity = child(0)->token();
                 try {
                     identity_symbol = tree_.resolve(identity.content());
                 } catch (const scope_not_found &e) {
@@ -449,22 +448,47 @@ public:
 
                 if (identity_symbol.type() == Symbol::Type::kInt) {
                     result = Token(Token::Type::kInt, identity.position());
-                    ir_.add(PCode(PCode::Type::kPushInteger, child(0)->token().content(), ir_indent_));
-                } else if (identity_symbol.type() == Symbol::Type::kIntArray) {
-                    result = Token(Token::Type::kIntArray, identity.position());
-                    ir_.add(PCode(PCode::Type::kPushIntegerArray, child(0)->token().content(), ir_indent_));
+                    ir_.add(PCode(PCode::Type::kPushInteger, identity.content(), ir_indent_));
                 } else if (identity_symbol.type() == Symbol::Type::kReal) {
                     result = Token(Token::Type::kReal, identity.position());
-                    ir_.add(PCode(PCode::Type::kPushReal, child(0)->token().content(), ir_indent_));
-                } else if (identity_symbol.type() == Symbol::Type::kRealArray) {
-                    result = Token(Token::Type::kRealArray, identity.position());
-                    ir_.add(PCode(PCode::Type::kPushRealArray, child(0)->token().content(), ir_indent_));
+                    ir_.add(PCode(PCode::Type::kPushReal, identity.content(), ir_indent_));
+                } else if (identity_symbol.type() == Symbol::Type::kIntArray || identity_symbol.type() == Symbol::Type::kRealArray) {
+                    add_error_messages(identity.position(), "不能将整个数组 \"" + identity.content() + "\" 用于表达式计算过程中");
+                    throw scope_critical_error();
                 } else {
                     add_error_messages(identity.position(), "无法辨识的符号 \"" + identity.content() + "\"");
                     throw scope_critical_error();
                 }
                 break;
             case Token::Type::kIdentityArray:
+                identity = analyse_identity_array(0);
+                try {
+                    identity_symbol = tree_.resolve(identity.content());
+                } catch (const scope_not_found &e) {
+                    add_error_messages(identity.position(), "未定义的标识符\"" + identity.content() + "\"");
+                    throw scope_critical_error();
+                }
+
+                if (identity_symbol.type() == Symbol::Type::kInt || identity_symbol.type() == Symbol::Type::kReal) {
+                    add_error_messages(identity.position(), "不能将数组运算符用于非数组变量 \"" + identity.content() + "\" 上");
+                    throw scope_critical_error();
+                } else if ((identity_symbol.type() == Symbol::Type::kIntArray && std::stoi(identity.extra().at(1)) >= identity_symbol.int_array().size()) ||
+                           (identity_symbol.type() == Symbol::Type::kRealArray && std::stoi(identity.extra().at(1)) >= identity_symbol.real_array().size())) {
+                    add_error_messages(identity.position(), "变量 \"" + identity.content() + "\" 的数组下标越界, 超过定义大小");
+                    throw scope_critical_error();
+                }
+
+                if (identity_symbol.type() == Symbol::Type::kIntArray) {
+                    result = Token(Token::Type::kInt, identity.position());
+                    ir_.add(PCode(PCode::Type::kPushIntegerArray, identity.content(), identity.extra().at(1), ir_indent_));
+                } else if (identity_symbol.type() == Symbol::Type::kRealArray) {
+                    result = Token(Token::Type::kReal, identity.position());
+                    ir_.add(PCode(PCode::Type::kPushRealArray, identity.content(), identity.extra().at(1), ir_indent_));
+                } else {
+                    add_error_messages(identity.position(), "系统内部错误: 无效返回 result 类型 at Token::Type::kIdentityArray");
+                    throw scope_critical_error();
+                }
+
                 break;
             case Token::Type::kExpression:
                 result = analyse_expression(0);

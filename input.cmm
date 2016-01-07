@@ -3,4 +3,4 @@ int c, d;
 real[10] e, f;
 real g, h;
 
-a[4] = b;
+f[2] = b[4] + e[5];
