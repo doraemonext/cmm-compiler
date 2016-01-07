@@ -162,6 +162,7 @@ public:
         // 分界左值格式
         int offset = 0;
         Token left_identity = analyse_identity_array(offset++);
+
         std::string identity = left_identity.content();
         int array_offset = -1;
         std::string::size_type p = identity.find(",");
@@ -339,7 +340,7 @@ public:
             if (child_type(0) == Token::Type::kIdentity) {
                 result = Token(Token::Type::kIdentity, child(0)->token().content(), child(0)->token().position());
             } else {
-                add_error_messages(child(0)->token().position(), "错误的左值 \"" + child(0)->token().content() + "\"");
+                add_error_messages(child(0)->token().position(), "错误的值 \"" + child(0)->token().content() + "\"");
                 throw scope_critical_error();
             }
         } else {
@@ -352,7 +353,7 @@ public:
             if (child_type(0) == Token::Type::kIdentity) {
                 result = Token(Token::Type::kIdentityArray, child(0)->token().content() + "," + child(1)->child(0)->token().content(), current_->token().position());
             } else {
-                add_error_messages(child(0)->token().position(), "错误的左值 \"" + child(0)->token().content() + "\"");
+                add_error_messages(child(0)->token().position(), "错误的值 \"" + child(0)->token().content() + "\"");
                 throw scope_critical_error();
             }
         }
@@ -435,6 +436,7 @@ public:
         Token result;
         Token identity = child(0)->token();
         Symbol identity_symbol;
+        std::string identity_string;
 
         switch (child_type(0)) {
             case Token::Type::kIntegerLiteral:
@@ -470,27 +472,7 @@ public:
                     throw scope_critical_error();
                 }
                 break;
-//            case Token::Type::kIdentityArray:
-//                try {
-//                    identity_symbol = tree_.resolve(identity.content());
-//                } catch (const scope_not_found &e) {
-//                    add_error_messages(identity.position(), "未定义的标识符\"" + identity.content() + "\"");
-//                    throw scope_critical_error();
-//                }
-
-//                if (identity_symbol.type() == Symbol::Type::kInt || identity_symbol.type() == Symbol::Type::kReal) {
-//                    add_error_messages(identity.position(), "未定义的标识符\"" + identity.content() + "\"");
-//                    throw scope_critical_error();
-//                } else if (identity_symbol.type() == Symbol::Type::kIntArray) {
-//                    result = Token(Token::Type::kIntArray, identity.position());
-//                    ir_.add(PCode(PCode::Type::kPushIntegerArray, child(0)->token().content(), ir_indent_));
-//                } else if (identity_symbol.type() == Symbol::Type::kRealArray) {
-//                    result = Token(Token::Type::kRealArray, identity.position());
-//                    ir_.add(PCode(PCode::Type::kPushRealArray, child(0)->token().content(), ir_indent_));
-//                } else {
-//                    add_error_messages(identity.position(), "无法辨识的符号 \"" + identity.content() + "\"");
-//                    throw scope_critical_error();
-//                }
+            case Token::Type::kIdentityArray:
                 break;
             case Token::Type::kExpression:
                 result = analyse_expression(0);

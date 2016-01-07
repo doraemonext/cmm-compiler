@@ -149,7 +149,7 @@ public:
                 os << "ret " << pcode.first();
                 break;
             case Type::kEndFunc:
-                os << "ENDFUNC @" << pcode.first();
+                os << "ENDFUNC";
                 break;
             case Type::kCall:
                 os << "$" << pcode.first();

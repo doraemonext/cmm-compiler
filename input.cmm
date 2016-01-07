@@ -1,3 +1,4 @@
-int a, b;
-real c;
-c = c + 6.0 * 7;
+func int main(int a)
+{
+return 0;
+}
