@@ -34,7 +34,7 @@ public:
 
     // 针对 int_array 的构造函数
     Symbol(const std::string &name, const std::vector<int> &value, const bool &is_assigned) :
-            name_(name), type_(Symbol::Type::kIntArray), ret_type_(Symbol::Type::kNone), is_assigned_(is_assigned) {
+            name_(name), type_(Symbol::Type::kIntArray), ret_type_(Symbol::Type::kNone), is_assigned_(true) {
         value_.int_array = value;
     }
 
@@ -46,7 +46,7 @@ public:
 
     // 针对 real_array 的构造函数
     Symbol(const std::string &name, const std::vector<double> &value, const bool &is_assigned) :
-            name_(name), type_(Symbol::Type::kRealArray), ret_type_(Symbol::Type::kNone), is_assigned_(is_assigned) {
+            name_(name), type_(Symbol::Type::kRealArray), ret_type_(Symbol::Type::kNone), is_assigned_(true) {
         value_.real_array = value;
     }
 
@@ -84,6 +84,10 @@ public:
 
     bool is_assigned() const {
         return is_assigned_;
+    }
+
+    void set_assigned() {
+        is_assigned_ = true;
     }
 
     const std::vector<Symbol> &args() const {

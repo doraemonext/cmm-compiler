@@ -196,6 +196,7 @@ public:
         }
 
         build_assign_statement_ir(left_identity, right_expression);
+        tree_.resolve(left_identity.content()).set_assigned();  // 直接修改AST树种的节点
 
         current_ = current_->parent();
         return Token(Token::Type::kAssignStatement, current_->token().position());
@@ -428,7 +429,11 @@ public:
                 try {
                     identity_symbol = tree_.resolve(identity.content());
                 } catch (const scope_not_found &e) {
-                    add_error_messages(identity.position(), "未定义的标识符\"" + identity.content() + "\"");
+                    add_error_messages(identity.position(), "未定义的标识符 \"" + identity.content() + "\"");
+                    throw scope_critical_error();
+                }
+                if (!identity_symbol.is_assigned()) {
+                    add_error_messages(identity.position(), "变量 \"" + identity.content() + "\" 尚未初始化而直接使用");
                     throw scope_critical_error();
                 }
 

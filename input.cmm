@@ -1,7 +1,4 @@
 int a;
-
-func real fun(int c, int d) {
-int a;
-real z;
-return a + 10.0;
-}
+int b;
+a = 10 + 22;
+a = a / 0;
