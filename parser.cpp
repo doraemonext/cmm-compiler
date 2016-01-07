@@ -265,19 +265,7 @@ void Parser::parse_return_statement() {
     std::stringstream buffer;
 
     match(Token::Type::kReturn);
-    if (forward_token().type() == Token::Type::kIdentity) {
-        current_->add_child(forward_token());
-        match(Token::Type::kIdentity);
-    } else if (forward_token().type() == Token::Type::kIntegerLiteral) {
-        current_->add_child(forward_token());
-        match(Token::Type::kIntegerLiteral);
-    } else if (forward_token().type() == Token::Type::kRealLiteral) {
-        current_->add_child(forward_token());
-        match(Token::Type::kRealLiteral);
-    } else {
-        buffer << "无效的标识符 \"" << forward_token().content() << "\", 无法将该内容作为函数返回值";
-        throw parser_exception(forward_token().position(), buffer.str());
-    }
+    parse_expression();
     match(Token::Type::kSemicolon);
 
     current_ = current_->parent();

@@ -256,26 +256,12 @@ public:
     Token analyse_return_statement(const int &pos, const Symbol &function_symbol) {
         current_ = child(pos);
 
-        Token result = analyse_literal(0);
-        if (result.type() == Token::Type::kIdentity) {
-            try {
-                const Symbol &identity = tree_.resolve(result.content());
-                if (identity.type() != function_symbol.ret_type()) {
-                    add_error_messages(result.position(), "return 语句返回的 \"" + identity.name() + "\" 与函数 \"" + function_symbol.name() + "\" 的返回类型 \"" + function_symbol.ret_type_name() + "\" 不一致");
-                    throw scope_critical_error();
-                }
-            } catch (const scope_not_found &e) {
-                add_error_messages(result.position(), "未定义的变量 \"" + result.content() + "\" 不能用于 return 语句");
-                throw scope_critical_error();
-            }
-        } else if (result.type() == Token::Type::kIntegerLiteral) {
-            if (function_symbol.ret_type() != Symbol::Type::kInt) {
-                add_error_messages(result.position(), "return 语句返回的 \"" + result.content() + "\" 与函数 \"" + function_symbol.name() + "\" 的返回类型 \"" + function_symbol.ret_type_name() + "\" 不一致");
-                throw scope_critical_error();
-            }
-        } else if (result.type() == Token::Type::kRealLiteral) {
-            if (function_symbol.ret_type() != Symbol::Type::kReal) {
-                add_error_messages(result.position(), "return 语句返回的 \"" + result.content() + "\" 与函数 \"" + function_symbol.name() + "\" 的返回类型 \"" + function_symbol.ret_type_name() + "\" 不一致");
+        Token result = analyse_expression(0);
+        if (function_symbol.ret_type() != Symbol::convert_token_type(result.type())) {
+            if (result.type() == Token::Type::kInt && function_symbol.type() == Symbol::Type::kReal) {
+                result.set_type(Token::Type::kReal);
+            } else {
+                add_error_messages(result.position(), "函数 \"" + function_symbol.name() + "\" 的返回类型不相符");
                 throw scope_critical_error();
             }
         }
@@ -629,7 +615,7 @@ private:
     }
 
     void build_return_statement_ir(const Token &literal) {
-        ir_.add(PCode(PCode::Type::kReturn, literal.content(), ir_indent_));
+        ir_.add(PCode(PCode::Type::kReturn, "~", ir_indent_));
     }
 
     void build_declare_statement_ir(const Token &declare_keyword, const Token &identity) {
