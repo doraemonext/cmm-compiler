@@ -236,13 +236,21 @@ void Parser::parse_assign_statement() {
     current_ = current_->add_child(Token::Type::kAssignStatement, forward_token());
     std::stringstream buffer;
 
-    current_ = current_->add_child(Token::Type::kIdentityArray, forward_token());
-    current_->add_child(forward_token());
-    match(Token::Type::kIdentity);
-    if (forward_token().type() == Token::Type::kLeftBracket) {
-        parse_array();
+    if (forward_token().type() == Token::Type::kIdentity && forward_token(2).type() == Token::Type::kLeftBracket) {
+        current_ = current_->add_child(Token::Type::kIdentityArray, forward_token());
+        current_->add_child(forward_token());
+        match(Token::Type::kIdentity);
+        if (forward_token().type() == Token::Type::kLeftBracket) {
+            parse_array();
+        }
+        current_ = current_->parent();
+    } else if (forward_token().type() == Token::Type::kIdentity) {
+        current_ = current_->add_child(Token::Type::kIdentity, forward_token());
+        current_->add_child(forward_token());
+        match(Token::Type::kIdentity);
+        current_ = current_->parent();
     }
-    current_ = current_->parent();
+
     match(Token::Type::kAssign);
     parse_expression();
     match(Token::Type::kSemicolon);

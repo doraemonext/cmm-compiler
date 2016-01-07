@@ -92,6 +92,8 @@ public:
 public:
     Token() : type_(Type::kNone), content_(""), position_(TokenPosition()) { }
 
+    Token(const Type &type, const std::string &content, const std::vector<std::string> &extra, const TokenPosition &position) : type_(type), content_(content), extra_(extra), position_(position) { }
+
     Token(const Type &type, const std::string &content, const TokenPosition &position) : type_(type), content_(content), position_(position) { }
 
     Token(const Type &type, const TokenPosition &position) : type_(type), content_(""), position_(position) { }
@@ -130,7 +132,7 @@ public:
         position_ = position;
     }
 
-    std::vector<std::string> &extra() {
+    const std::vector<std::string> &extra() const {
         return extra_;
     }
 

@@ -162,48 +162,40 @@ public:
         // 分界左值格式
         int offset = 0;
         Token left_identity = analyse_identity_array(offset++);
-
-        std::string identity = left_identity.content();
-        int array_offset = -1;
-        std::string::size_type p = identity.find(",");
-        if (p != std::string::npos) {
-            array_offset = std::stoi(identity.substr(p+1));
-            identity = identity.substr(0, p);
-        }
-
         // 检查标识符是否定义
-        Symbol identity_symbol;
+        Symbol left_identity_symbol;
         try {
-            identity_symbol = tree_.resolve(identity);
-            if ((left_identity.type() == Token::Type::kIdentity && identity_symbol.type() != Symbol::Type::kInt && identity_symbol.type() != Symbol::Type::kReal) ||
-                (left_identity.type() == Token::Type::kIdentityArray && identity_symbol.type() != Symbol::Type::kIntArray && identity_symbol.type() != Symbol::Type::kRealArray)) {
-                add_error_messages(left_identity.position(), "左值 \"" + identity + "\" 类型与其定义类型不符");
+            left_identity_symbol = tree_.resolve(left_identity.content());
+            if (left_identity.type() == Token::Type::kIdentity && (left_identity_symbol.type() == Symbol::Type::kIntArray || left_identity_symbol.type() == Symbol::Type::kRealArray)) {
+                add_error_messages(left_identity.position(), "不能直接为数组 \"" + left_identity.content() + "\" 赋值");
+                throw scope_critical_error();
+            }
+            if ((left_identity.type() == Token::Type::kIdentity && left_identity_symbol.type() != Symbol::Type::kInt && left_identity_symbol.type() != Symbol::Type::kReal) ||  // 左值类型为变量, 但符号表中其值并不为 int 或 real 时
+                (left_identity.type() == Token::Type::kIdentityArray && left_identity_symbol.type() != Symbol::Type::kIntArray && left_identity_symbol.type() != Symbol::Type::kRealArray)) {  // 左值类型为数组,但符号表中其值并不为 int[] 或 real[] 时
+                add_error_messages(left_identity.position(), "左值 \"" + left_identity.content() + "\" 类型与其定义类型不符");
                 throw scope_critical_error();
             }
         } catch (const scope_not_found &e) {
-            add_error_messages(left_identity.position(), "未定义的标识符 \"" + identity + "\" 不能用于赋值语句的左值");
+            add_error_messages(left_identity.position(), "未定义的标识符 \"" + left_identity.content() + "\" 不能用于赋值语句的左值");
             throw scope_critical_error();
         }
 
         // 检查数组偏移量是否越界
-        if (array_offset != -1) {
-            if (array_offset < 0 ||
-                (identity_symbol.type() == Symbol::Type::kIntArray && identity_symbol.int_array().size() <= array_offset) ||
-                (identity_symbol.type() == Symbol::Type::kRealArray && identity_symbol.real_array().size() <= array_offset)) {
-                add_error_messages(left_identity.position(), "数组 \"" + identity + "\" 的偏移地址越界");
+        if (left_identity.type() == Token::Type::kIntArray || left_identity.type() == Token::Type::kRealArray) {
+            if ((left_identity_symbol.type() == Symbol::Type::kIntArray && left_identity_symbol.int_array().size() <= std::stoi(left_identity.extra().at(1))) ||
+                (left_identity_symbol.type() == Symbol::Type::kRealArray && left_identity_symbol.real_array().size() <= std::stoi(left_identity.extra().at(1)))) {
+                add_error_messages(left_identity.position(), "数组 \"" + left_identity.content() + "\" 的偏移地址越界");
                 throw scope_critical_error();
             }
         }
 
-        Token right = analyse_expression(offset++);
-
-        if (identity_symbol.type() != Symbol::convert_token_type(right.type())) {
-            add_error_messages(right.position(), "算符两侧表达式类型不同, 无法运算");
+        Token right_expression = analyse_expression(offset++);
+        if (right_expression.type() == Token::Type::kReal && (left_identity_symbol.type() == Symbol::Type::kInt || left_identity_symbol.type() == Symbol::Type::kIntArray)) {
+            add_error_messages(left_identity.position(), "real 类型无法赋值给左值类型");
             throw scope_critical_error();
         }
 
-        // 生成 IR
-        build_assign_statement_ir(left_identity, array_offset, identity_symbol.type());
+        build_assign_statement_ir(left_identity, right_expression);
 
         current_ = current_->parent();
         return Token(Token::Type::kAssignStatement, current_->token().position());
@@ -351,7 +343,7 @@ public:
             }
 
             if (child_type(0) == Token::Type::kIdentity) {
-                result = Token(Token::Type::kIdentityArray, child(0)->token().content() + "," + child(1)->child(0)->token().content(), current_->token().position());
+                result = Token(Token::Type::kIdentityArray, child(0)->token().content(), std::vector<std::string>({"1", child(1)->child(0)->token().content()}), current_->token().position());
             } else {
                 add_error_messages(child(0)->token().position(), "错误的值 \"" + child(0)->token().content() + "\"");
                 throw scope_critical_error();
@@ -596,19 +588,19 @@ private:
         }
     }
 
-    void build_assign_statement_ir(const Token &left_identity, const int &array_offset, const Symbol::Type &type) {
+    void build_assign_statement_ir(const Token &left_identity, const Token &right_expression) {
         if (left_identity.type() == Token::Type::kIdentityArray) {
-            if (type == Symbol::Type::kIntArray) {
-                ir_.add(PCode(PCode::Type::kPopIntegerArray, left_identity.content().substr(0, left_identity.content().find(",")), std::to_string(array_offset), ir_indent_));
-            } else if (type == Symbol::Type::kRealArray) {
-                ir_.add(PCode(PCode::Type::kPopRealArray, left_identity.content().substr(0, left_identity.content().find(",")), std::to_string(array_offset), ir_indent_));
+            if (right_expression.type() == Token::Type::kInt) {
+                ir_.add(PCode(PCode::Type::kPopIntegerArray, left_identity.content(), left_identity.extra().at(1), ir_indent_));
+            } else if (right_expression.type() == Token::Type::kReal) {
+                ir_.add(PCode(PCode::Type::kPopRealArray, left_identity.content(), left_identity.extra().at(1), ir_indent_));
             } else {
                 throw std::invalid_argument("build_assign_statement_ir 1 failed, not expected.");
             }
         } else if (left_identity.type() == Token::Type::kIdentity) {
-            if (type == Symbol::Type::kInt) {
+            if (right_expression.type() == Token::Type::kInt) {
                 ir_.add(PCode(PCode::Type::kPopInteger, left_identity.content(), ir_indent_));
-            } else if (type == Symbol::Type::kReal) {
+            } else if (right_expression.type() == Token::Type::kReal) {
                 ir_.add(PCode(PCode::Type::kPopReal, left_identity.content(), ir_indent_));
             } else {
                 throw std::invalid_argument("build_assign_statement_ir 2 failed, not expected.");
