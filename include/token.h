@@ -130,6 +130,14 @@ public:
         position_ = position;
     }
 
+    std::vector<std::string> &extra() {
+        return extra_;
+    }
+
+    void push_extra(const std::string &str) {
+        extra_.push_back(str);
+    }
+
     friend std::ostream &operator << (std::ostream &os, const Token &token) {
         os << token.content();
         return os;
@@ -143,6 +151,7 @@ private:
     Type type_;             // Token 类型
     std::string content_;   // Token 内容
     TokenPosition position_;     // Token 所处位置
+    std::vector<std::string> extra_;  // Token 附带的额外信息
 };
 
 #endif //CMM_TOKEN_H
