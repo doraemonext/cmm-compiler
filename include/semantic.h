@@ -494,6 +494,7 @@ public:
                 result = analyse_expression(0);
                 break;
             case Token::Type::kFunctionCall:
+                result = analyse_function_call(0);
                 break;
             default:
                 break;
@@ -509,6 +510,44 @@ public:
 
     Token analyse_mul_op(const int &pos) {
         return child(pos)->child(0)->token();
+    }
+
+    Token analyse_function_call(const int &pos) {
+        current_ = child(pos);
+
+        Symbol function_symbol;
+        Token identity = child(0)->token();
+        try {
+            function_symbol = tree_.resolve(identity.content());
+        } catch (const scope_not_found &e) {
+            add_error_messages(identity.position(), "函数 \"" + identity.content() + "\" 未定义");
+            throw scope_critical_error();
+        }
+        analyse_function_call_parameters(1, function_symbol);
+
+        build_function_call_ir(identity);
+
+        current_ = current_->parent();
+        return Token(Symbol::convert_symbol_type(function_symbol.ret_type()), current_->token().position());
+    }
+
+    Token analyse_function_call_parameters(const int &pos, const Symbol &function_symbol) {
+        current_ = child(pos);
+
+        if (children_size() != function_symbol.args().size()) {
+            add_error_messages(current_->token().position(), "函数 \"" + function_symbol.name() + "\" 需要传入 " + std::to_string(function_symbol.args().size()) + " 个参数, 实际只传入了 " + std::to_string(children_size()) + " 个参数");
+            throw scope_critical_error();
+        }
+        for (int i = 0; i < children_size(); ++i) {
+            Token expression = analyse_expression(i);
+            if (Symbol::convert_token_type(expression.type()) != function_symbol.args().at((unsigned long)i).type()) {
+                add_error_messages(expression.position(), "函数 \"" + function_symbol.name() + "\" 的第 " + std::to_string(i + 1) + " 个形参要求为 " + function_symbol.args().at((unsigned long)i).type_name() + " 类型, 实际传入参数类型为 " + expression.type_name());
+                throw scope_critical_error();
+            }
+        }
+
+        current_ = current_->parent();
+        return current_->token();
     }
 
     void print_error_messages() const {
@@ -648,6 +687,10 @@ private:
         } else {
             ir_.add(PCode(PCode::Type::kDiv, ir_indent_));
         }
+    }
+
+    void build_function_call_ir(const Token &identity) {
+        ir_.add(PCode(PCode::Type::kCall, identity.content(), ir_indent_));
     }
 };
 

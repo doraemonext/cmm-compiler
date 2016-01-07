@@ -150,6 +150,25 @@ public:
         }
     }
 
+    static const Token::Type convert_symbol_type(const Type &symbol_type) {
+        switch (symbol_type) {
+            case Type::kFunction:
+                return Token::Type::kFunction;
+            case Type::kInt:
+                return Token::Type::kInt;
+            case Type::kReal:
+                return Token::Type::kReal;
+            case Type::kIntArray:
+                return Token::Type::kIntArray;
+            case Type::kRealArray:
+                return Token::Type::kRealArray;
+            case Type::kVoid:
+                return Token::Type::kVoid;
+            default:
+                throw std::invalid_argument("cannot convert to Token::Type from Symbol::Type with received parameter");
+        }
+    }
+
     static const char *symbol_type_name(const Type &type) {
         switch (type) {
             case Type::kNone: return "none";

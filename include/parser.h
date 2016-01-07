@@ -120,7 +120,7 @@ private:
 
     bool is_mul_op(const Token::Type &type);
 
-    bool is_literal(const Token::Type &type);
+    bool is_function_call_valid_parameter(const Token::Type &type);
 };
 
 #endif //CMM_PARSER_H

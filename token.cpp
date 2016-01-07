@@ -66,6 +66,7 @@ const char *Token::token_type_name(const Type &type) {
         case Type::kFactor: return "factor";
         case Type::kArray: return "array";
         case Type::kFunctionCall: return "function_call";
+        case Type::kFunctionCallParameters: return "function_call_parameters";
         case Type::kNone: return "none";
         case Type::kIntArray: return "int_array";
         case Type::kRealArray: return "real_array";

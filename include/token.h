@@ -82,6 +82,7 @@ public:
         kFactor,             // 元素
         kArray,              // 数组
         kFunctionCall,       // 函数调用
+        kFunctionCallParameters,  // 函数调用所有参数
 
         kIntArray,           // int array
         kRealArray,          // real array

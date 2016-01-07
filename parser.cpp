@@ -534,28 +534,18 @@ void Parser::parse_function_call() {
 
     current_->add_child(forward_token());
     match(Token::Type::kIdentity);
+    current_ = current_->add_child(Token::Type::kFunctionCallParameters, forward_token());
     match(Token::Type::kLeftParen);
-    if (is_literal(forward_token().type())) {
+    if (is_function_call_valid_parameter(forward_token().type())) {
         do {
             if (forward_token().type() == Token::Type::kComma) {
                 match(Token::Type::kComma);
             }
-            if (forward_token().type() == Token::Type::kIdentity) {
-                current_->add_child(forward_token());
-                match(Token::Type::kIdentity);
-            } else if (forward_token().type() == Token::Type::kRealLiteral) {
-                current_->add_child(forward_token());
-                match(Token::Type::kRealLiteral);
-            } else if (forward_token().type() == Token::Type::kIntegerLiteral) {
-                current_->add_child(forward_token());
-                match(Token::Type::kIntegerLiteral);
-            } else {
-                buffer << "无效的标识符 \"" << forward_token().content() << "\", 函数调用过程中仅允许 Identity, Real, Int 类型标识符";
-                throw parser_exception(forward_token().position(), buffer.str());
-            }
+            parse_expression();
         } while (forward_token().type() == Token::Type::kComma);
     }
     match(Token::Type::kRightParen);
+    current_ = current_->parent();
 
     current_ = current_->parent();
 }
@@ -581,6 +571,6 @@ bool Parser::is_mul_op(const Token::Type &type) {
     return type == Token::Type::kTimes || type == Token::Type::kDivide;
 }
 
-bool Parser::is_literal(const Token::Type &type) {
+bool Parser::is_function_call_valid_parameter(const Token::Type &type) {
     return type == Token::Type::kIntegerLiteral || type == Token::Type::kRealLiteral || type == Token::Type::kIdentity;
 }
