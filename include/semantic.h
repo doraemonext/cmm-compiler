@@ -137,6 +137,7 @@ public:
             case Token::Type::kReadStatement:
                 break;
             case Token::Type::kWriteStatement:
+                result = analyse_write_statement(0);
                 break;
             case Token::Type::kAssignStatement:
                 result = analyse_assign_statement(0);
@@ -151,6 +152,15 @@ public:
                 break;
         }
 
+        current_ = current_->parent();
+        return result;
+    }
+
+    // 解析 write 语句
+    Token analyse_write_statement(const int &pos) {
+        current_ = child(pos);
+        Token result = analyse_expression(0);
+        build_write_statement_ir();
         current_ = current_->parent();
         return result;
     }
@@ -682,6 +692,10 @@ private:
 
     void build_function_call_ir(const Token &identity) {
         ir_.add(PCode(PCode::Type::kCall, identity.content(), ir_indent_));
+    }
+
+    void build_write_statement_ir() {
+        ir_.add(PCode(PCode::Type::kPrint, ir_indent_));
     }
 };
 
