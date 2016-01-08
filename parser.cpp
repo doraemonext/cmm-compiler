@@ -189,10 +189,12 @@ void Parser::parse_while_statement() {
     parse_condition();
     match(Token::Type::kRightParen);
     match(Token::Type::kLeftBrace);
+    current_ = current_->add_child(Token::Type::kStatements, forward_token());
     while (forward_token().type() != Token::Type::kRightBrace) {
         parse_statement();
     }
     match(Token::Type::kRightBrace);
+    current_ = current_->parent();
 
     current_ = current_->parent();
 }

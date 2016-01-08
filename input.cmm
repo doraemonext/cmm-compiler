@@ -1,3 +1,12 @@
-int[5] a;
-real[5] c;
-read(c[2]);
+int a, b, c, d;
+a = 0;
+b = 1;
+c = 2;
+d = 3;
+
+while (a > 0) {
+    a = a - 1;
+}
+
+write(a);
+write(c);

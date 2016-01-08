@@ -131,8 +131,10 @@ public:
         Token result;
         switch (child_type(0)) {
             case Token::Type::kIfStatement:
+                analyse_if_statement(0);
                 break;
             case Token::Type::kWhileStatement:
+                analyse_while_statement(0);
                 break;
             case Token::Type::kReadStatement:
                 result = analyse_read_statement(0);
@@ -152,6 +154,35 @@ public:
             default:
                 break;
         }
+
+        current_ = current_->parent();
+        return result;
+    }
+
+    // 解析 if 语句
+    Token analyse_if_statement(const int &pos) {
+        current_ = child(pos);
+        Token result;
+
+        current_ = current_->parent();
+        return result;
+    }
+
+    // 解析 while 语句
+    Token analyse_while_statement(const int &pos) {
+        current_ = child(pos);
+        Token result;
+        std::string while_signature = "_" + std::to_string(current_->token().position().row()) + "_" + std::to_string(current_->token().position().col());   // TODO: 扩展多文件时需要修改
+
+        build_while_statement_ir_begin(while_signature);
+        Token condition = analyse_condition(0);
+        build_while_statement_ir_jz(while_signature);
+        current_ = child(1);
+        for (int i = 0; i < children_size(); ++i) {
+            analyse_statement(i, Symbol("__while__"));
+        }
+        current_ = current_->parent();
+        build_while_statement_ir_end(while_signature);
 
         current_ = current_->parent();
         return result;
@@ -385,6 +416,28 @@ public:
         return result;
     }
 
+    // 解析判别式
+    Token analyse_condition(const int &pos) {
+        current_ = child(pos);
+        Token result;
+
+        Token first = analyse_expression(0);
+        Token op = analyse_comparison_op(1);
+        Token second = analyse_expression(2);
+
+        build_condition_ir(op);
+
+        current_ = current_->parent();
+        return result;
+    }
+
+    // 解析关系运算符
+    Token analyse_comparison_op(const int &pos) {
+        current_ = child(pos);
+        Token result = child(0)->token();
+        current_ = current_->parent();
+        return result;
+    }
 
     // 解析标识符
     Token analyse_identity(const int &pos) {
@@ -752,6 +805,44 @@ private:
         } else {
             throw std::invalid_argument("build_read_statement_ir 3 failed, not expected.");
         }
+    }
+
+    void build_condition_ir(const Token &op) {
+        switch (op.type()) {
+            case Token::Type::kLT:
+                ir_.add(PCode(PCode::Type::kCompareLessThan, ir_indent_));
+                break;
+            case Token::Type::kLTE:
+                ir_.add(PCode(PCode::Type::kCompareLessEqual, ir_indent_));
+                break;
+            case Token::Type::kGT:
+                ir_.add(PCode(PCode::Type::kCompareGreaterThan, ir_indent_));
+                break;
+            case Token::Type::kGTE:
+                ir_.add(PCode(PCode::Type::kCompareGreaterEqual, ir_indent_));
+                break;
+            case Token::Type::kEqual:
+                ir_.add(PCode(PCode::Type::kCompareEqual, ir_indent_));
+                break;
+            case Token::Type::kNotEqual:
+                ir_.add(PCode(PCode::Type::kCompareNotEqual, ir_indent_));
+                break;
+            default:
+                throw std::invalid_argument("build_condition_ir failed, not expected.");
+        }
+    }
+
+    void build_while_statement_ir_begin(const std::string &signature) {
+        ir_.add(PCode(PCode::Type::kLabel, "_beg_while" + signature, ir_indent_));
+    }
+
+    void build_while_statement_ir_jz(const std::string &signature) {
+        ir_.add(PCode(PCode::Type::kJumpZero, "_end_while" + signature, ir_indent_));
+    }
+
+    void build_while_statement_ir_end(const std::string &signature) {
+        ir_.add(PCode(PCode::Type::kJump, "_begin_while" + signature, ir_indent_));
+        ir_.add(PCode(PCode::Type::kLabel, "_end_while" + signature, ir_indent_));
     }
 };
 

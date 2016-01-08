@@ -249,13 +249,13 @@ public:
                 os << "neg";
                 break;
             case Type::kJump:
-                os << "jmp";
+                os << "jmp " << pcode.first();
                 break;
             case Type::kJumpZero:
-                os << "jz";
+                os << "jz " << pcode.first();
                 break;
             case Type::kJumpNotZero:
-                os << "jnz";
+                os << "jnz " << pcode.first();
                 break;
             case Type::kPrint:
                 os << "print";
