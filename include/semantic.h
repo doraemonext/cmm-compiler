@@ -184,6 +184,7 @@ public:
         }
 
         build_read_statement_ir(result, symbol);
+        tree_.resolve(result.content()).set_assigned();
 
         current_ = current_->parent();
         return result;
