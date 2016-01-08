@@ -1,10 +1,22 @@
-int a;
-a = 0;
-
-if (a > 0) {
-    print(a);
-    print(a);
-} else {
-    read(a);
-    read(a);
+func int main() {
+    int i;
+    i = 0;
+    while (i < 10) {
+        i = i + 1;
+        if (i == 3) {
+            i = 3;
+        }
+        if (i == 8) {
+            i = 8;
+        }
+        print(i);
+    }
+    return 0;
 }
+
+func int factor(int n) {
+     if (n < 2) {
+         return 1;
+     }
+     return n * factor(n - 1);
+ }

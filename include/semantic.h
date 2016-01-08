@@ -79,16 +79,16 @@ public:
             const Token &second = parameters[i].second;
             switch (first.type()) {
                 case Token::Type::kInt:
-                    parameters_symbol.push_back(Symbol(second.content(), 0, false));
+                    parameters_symbol.push_back(Symbol(second.content(), 0, true));
                     break;
                 case Token::Type::kIntArray:
-                    parameters_symbol.push_back(Symbol(second.content(), std::vector<int>(), false));
+                    parameters_symbol.push_back(Symbol(second.content(), std::vector<int>(), true));
                     break;
                 case Token::Type::kReal:
-                    parameters_symbol.push_back(Symbol(second.content(), 0.0, false));
+                    parameters_symbol.push_back(Symbol(second.content(), 0.0, true));
                     break;
                 case Token::Type::kRealArray:
-                    parameters_symbol.push_back(Symbol(second.content(), std::vector<double>(), false));
+                    parameters_symbol.push_back(Symbol(second.content(), std::vector<double>(), true));
                     break;
                 default:
                     break;
@@ -131,10 +131,10 @@ public:
         Token result;
         switch (child_type(0)) {
             case Token::Type::kIfStatement:
-                analyse_if_statement(0);
+                analyse_if_statement(0, function_symbol);
                 break;
             case Token::Type::kWhileStatement:
-                analyse_while_statement(0);
+                analyse_while_statement(0, function_symbol);
                 break;
             case Token::Type::kReadStatement:
                 result = analyse_read_statement(0);
@@ -160,7 +160,7 @@ public:
     }
 
     // 解析 if 语句
-    Token analyse_if_statement(const int &pos) {
+    Token analyse_if_statement(const int &pos, const Symbol &function_symbol) {
         current_ = child(pos);
         Token result;
         std::string if_signature = "_" + std::to_string(current_->token().position().row()) + "_" + std::to_string(current_->token().position().col());   // TODO: 扩展多文件时需要修改
@@ -170,14 +170,14 @@ public:
         build_if_statement_ir_jz(if_signature);
         current_ = child(1);
         for (int i = 0; i < children_size(); ++i) {
-            analyse_statement(i, Symbol("__if__"));
+            analyse_statement(i, function_symbol);
         }
         current_ = current_->parent();
         build_if_statement_ir_else(if_signature);
         if (children_size() > 2) {
             current_ = child(2);
             for (int i = 0; i < children_size(); ++i) {
-                analyse_statement(i, Symbol("__if__"));
+                analyse_statement(i, function_symbol);
             }
             current_ = current_->parent();
         }
@@ -189,7 +189,7 @@ public:
     }
 
     // 解析 while 语句
-    Token analyse_while_statement(const int &pos) {
+    Token analyse_while_statement(const int &pos, const Symbol &function_symbol) {
         current_ = child(pos);
         Token result;
         std::string while_signature = "_" + std::to_string(current_->token().position().row()) + "_" + std::to_string(current_->token().position().col());   // TODO: 扩展多文件时需要修改
@@ -199,7 +199,7 @@ public:
         build_while_statement_ir_jz(while_signature);
         current_ = child(1);
         for (int i = 0; i < children_size(); ++i) {
-            analyse_statement(i, Symbol("__while__"));
+            analyse_statement(i, function_symbol);
         }
         current_ = current_->parent();
         build_while_statement_ir_end(while_signature);
