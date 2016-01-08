@@ -59,7 +59,9 @@ public:
 
         kPrint,                          // print
         kReadInt,                        // readi
+        kReadIntArray,                   // readia
         kReadReal,                       // readr
+        kReadRealArray,                  // readra
 
         kExit,                           // exit
     };
@@ -120,12 +122,17 @@ public:
         indent_ = indent;
     }
 
-    friend std::ostream &operator << (std::ostream &os, const PCode &pcode) {
+    static std::ostream &print_indent(std::ostream &os, const PCode &pcode) {
         if (pcode.type() != Type::kStartFunc && pcode.type() != Type::kEndFunc && pcode.type() != Type::kLabel) {
             for (int i = 0; i < pcode.indent(); ++i) {
                 os << " ";
             }
         }
+        return os;
+    }
+
+    friend std::ostream &operator << (std::ostream &os, const PCode &pcode) {
+        pcode.print_indent(os, pcode);
         switch (pcode.type()) {
             case Type::kNone:
                 os << "none";
@@ -254,10 +261,24 @@ public:
                 os << "print";
                 break;
             case Type::kReadInt:
-                os << "readi";
+                os << "readi" << std::endl;
+                pcode.print_indent(os, pcode);
+                os << "popi " << pcode.first();
+                break;
+            case Type::kReadIntArray:
+                os << "readi" << std::endl;
+                pcode.print_indent(os, pcode);
+                os << "popia " << pcode.first() << ", " << pcode.second();
                 break;
             case Type::kReadReal:
-                os << "readr";
+                os << "readr" << std::endl;
+                pcode.print_indent(os, pcode);
+                os << "popr " << pcode.first();
+                break;
+            case Type::kReadRealArray:
+                os << "readr" << std::endl;
+                pcode.print_indent(os, pcode);
+                os << "popra " << pcode.first() << ", " << pcode.second();
                 break;
             case Type::kExit:
                 os << "exit " << pcode.first();

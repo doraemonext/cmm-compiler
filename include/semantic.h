@@ -135,6 +135,7 @@ public:
             case Token::Type::kWhileStatement:
                 break;
             case Token::Type::kReadStatement:
+                result = analyse_read_statement(0);
                 break;
             case Token::Type::kWriteStatement:
                 result = analyse_write_statement(0);
@@ -151,6 +152,38 @@ public:
             default:
                 break;
         }
+
+        current_ = current_->parent();
+        return result;
+    }
+
+    // 解析 read 语句
+    Token analyse_read_statement(const int &pos) {
+        current_ = child(pos);
+        Token result = analyse_identity_array(0);
+        Symbol symbol;
+
+        try {
+            symbol = tree_.resolve(result.content());
+        } catch (const scope_not_found &e) {
+            add_error_messages(result.position(), "标识符 \"" + result.content() + "\" 尚未定义, 不能 read");
+            throw scope_critical_error();
+        }
+
+        if (symbol.type() == Symbol::Type::kFunction) {
+            add_error_messages(result.position(), "不能向函数 \"" + symbol.name() + "\" 读入数据");
+            throw scope_critical_error();
+        }
+        if (result.type() == Token::Type::kIdentity && (symbol.type() != Symbol::Type::kInt && symbol.type() != Symbol::Type::kReal)) {
+            add_error_messages(result.position(), "仅能向 int 或 real 形式的变量读入数据");
+            throw scope_critical_error();
+        }
+        if (result.type() == Token::Type::kIdentityArray && (symbol.type() != Symbol::Type::kIntArray && symbol.type() != Symbol::Type::kRealArray)) {
+            add_error_messages(result.position(), "普通变量 \"" + symbol.name() + "\" 不能使用数组寻址方式");
+            throw scope_critical_error();
+        }
+
+        build_read_statement_ir(result, symbol);
 
         current_ = current_->parent();
         return result;
@@ -696,6 +729,28 @@ private:
 
     void build_write_statement_ir() {
         ir_.add(PCode(PCode::Type::kPrint, ir_indent_));
+    }
+
+    void build_read_statement_ir(const Token &token, const Symbol &symbol) {
+        if (token.type() == Token::Type::kIdentity) {
+            if (symbol.type() == Symbol::Type::kInt) {
+                ir_.add(PCode(PCode::Type::kReadInt, token.content(), ir_indent_));
+            } else if (symbol.type() == Symbol::Type::kReal) {
+                ir_.add(PCode(PCode::Type::kReadReal, token.content(), ir_indent_));
+            } else {
+                throw std::invalid_argument("build_read_statement_ir 1 failed, not expected.");
+            }
+        } else if (token.type() == Token::Type::kIdentityArray) {
+            if (symbol.type() == Symbol::Type::kIntArray) {
+                ir_.add(PCode(PCode::Type::kReadIntArray, token.content(), token.extra().at(1), ir_indent_));
+            } else if (symbol.type() == Symbol::Type::kRealArray) {
+                ir_.add(PCode(PCode::Type::kReadRealArray, token.content(), token.extra().at(1), ir_indent_));
+            } else {
+                throw std::invalid_argument("build_read_statement_ir 2 failed, not expected.");
+            }
+        } else {
+            throw std::invalid_argument("build_read_statement_ir 3 failed, not expected.");
+        }
     }
 };
 
