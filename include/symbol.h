@@ -204,4 +204,127 @@ private:
     bool is_assigned_;
 };
 
+class StackSymbol {
+public:
+    enum class Type {
+        kInt = 0,
+        kIntArray,
+        kReal,
+        kRealArray,
+    };
+
+    // 针对 int 的构造函数
+    StackSymbol(const int &value) : type_(Symbol::Type::kInt) {
+        value_.int_value = value;
+    }
+
+    // 针对 int_array 的构造函数
+    StackSymbol(const std::vector<int> &value) : type_(Symbol::Type::kIntArray) {
+        value_.int_array = value;
+    }
+
+    // 针对 real 的构造函数
+    StackSymbol(const double &value) : type_(Symbol::Type::kReal) {
+        value_.real_value = value;
+    }
+
+    // 针对 real_array 的构造函数
+    StackSymbol(const std::vector<double> &value) : type_(Symbol::Type::kRealArray) {
+        value_.real_array = value;
+    }
+
+    Type type() const {
+        return type_;
+    }
+
+    const char *type_name() const {
+        return symbol_type_name(type_);
+    }
+
+    void set_type(const Type &type) {
+        type_ = type;
+    }
+
+    const int &int_value() const {
+        return value_.int_value;
+    }
+
+    const std::vector<int> &int_array() const {
+        return value_.int_array;
+    }
+
+    const double &real_value() const {
+        return value_.real_value;
+    }
+
+    const std::vector<double> &real_array() const {
+        return value_.real_array;
+    }
+
+    void set_value(const int &value) {
+        value_.int_value = value;
+    }
+
+    void set_value(const std::vector<int> &value) {
+        value_.int_array = value;
+    }
+
+    void set_value(const double &value) {
+        value_.real_value = value;
+    }
+
+    void set_value(const std::vector<double> &value) {
+        value_.real_array = value;
+    }
+
+    static const Type convert_token_type(const Token::Type &token_type) {
+        switch (token_type) {
+            case Token::Type::kInt:
+                return Type::kInt;
+            case Token::Type::kReal:
+                return Type::kReal;
+            case Token::Type::kIntArray:
+                return Type::kIntArray;
+            case Token::Type::kRealArray:
+                return Type::kRealArray;
+            default:
+                throw std::invalid_argument("cannot convert to Symbol::Type from Token::Type with received parameter");
+        }
+    }
+
+    static const Token::Type convert_symbol_type(const Type &symbol_type) {
+        switch (symbol_type) {
+            case Type::kInt:
+                return Token::Type::kInt;
+            case Type::kReal:
+                return Token::Type::kReal;
+            case Type::kIntArray:
+                return Token::Type::kIntArray;
+            case Type::kRealArray:
+                return Token::Type::kRealArray;
+        }
+    }
+
+    static const char *symbol_type_name(const Type &type) {
+        switch (type) {
+            case Type::kInt: return "int";
+            case Type::kIntArray: return "int_array";
+            case Type::kReal: return "real";
+            case Type::kRealArray: return "real_array";
+        }
+    }
+
+private:
+    typedef struct {
+        int int_value;
+        std::vector<int> int_array;
+        double real_value;
+        std::vector<double> real_array;
+    } UnionValue;
+
+    Type type_;
+    UnionValue value_;
+};
+
 #endif //CMM_SYMBOL_H
+
