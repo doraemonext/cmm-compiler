@@ -48,4 +48,17 @@ class scope_name_exists : public std::exception { };
 
 class scope_critical_error : public std::exception { };
 
+// 模拟器运行错误
+class simulator_error : public std::exception {
+public:
+    explicit simulator_error(const std::string &msg) : msg_(msg) { }
+
+    virtual ~simulator_error() throw() { }
+
+    virtual const char *what() const throw() { return msg_.c_str(); }
+
+protected:
+    std::string msg_;
+};
+
 #endif //CMM_EXCEPTIONS_H

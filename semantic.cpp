@@ -648,6 +648,10 @@ Token Semantic::analyse_function_call_parameters(const int &pos, const Symbol &f
     return current_->token();
 }
 
+const IR &Semantic::ir() const {
+    return ir_;
+}
+
 void Semantic::print_error_messages() const {
     for (int i = 0; i < error_messages_.size(); ++i) {
         std::cout << "[错误] 第 " << error_messages_[i].first.row() << " 行 第 " << error_messages_[i].first.col() << " 列: " << error_messages_[i].second << std::endl;
@@ -862,4 +866,3 @@ void Semantic::build_if_statement_ir_else(const std::string &signature) {
 void Semantic::build_if_statement_ir_end(const std::string &signature) {
     ir_.add(PCode(PCode::Type::kLabel, "_end_if" + signature, ir_indent_));
 }
-

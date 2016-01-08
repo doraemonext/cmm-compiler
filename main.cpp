@@ -5,6 +5,7 @@
 #include "include/lexer.h"
 #include "include/parser.h"
 #include "include/semantic.h"
+#include "include/simulator.h"
 
 using namespace std;
 
@@ -29,6 +30,9 @@ int main() {
         semantic.print_error_messages();
     }
     semantic.print_warning_messages();
+
+    Simulator simulator(semantic.ir());
+    simulator.run();
 
     return 0;
 }

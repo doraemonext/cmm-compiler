@@ -77,6 +77,8 @@ public:
 
     Token analyse_function_call_parameters(const int &pos, const Symbol &function_symbol);
 
+    const IR &ir() const;
+
     void print_error_messages() const;
 
     void print_warning_messages() const;
