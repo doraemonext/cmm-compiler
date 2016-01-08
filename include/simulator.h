@@ -1,6 +1,8 @@
 #ifndef CMM_SIMULATOR_H
 #define CMM_SIMULATOR_H
 
+#include "scope.h"
+
 class Code {
 
 };
@@ -9,11 +11,11 @@ class Stack {
 
 };
 
-class VarTable {
+class FuncTable {
 
 };
 
-class FuncTable {
+class LabelTable {
 
 };
 
@@ -24,8 +26,9 @@ public:
 private:
     Code code_;
     Stack stack_;
-    VarTable var_table_;
+    ScopeTree tree_;
     FuncTable func_table_;
+    LabelTable label_table_;
     int eip_;
 };
 

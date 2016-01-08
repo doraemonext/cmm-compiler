@@ -3,5 +3,8 @@ i = 100;
 
 
 func int main() {
+    if (i > 100) {
+         i = i - 1;
+    }
     return 0;
 }
