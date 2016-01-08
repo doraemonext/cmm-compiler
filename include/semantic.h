@@ -163,8 +163,28 @@ public:
     Token analyse_if_statement(const int &pos) {
         current_ = child(pos);
         Token result;
+        std::string if_signature = "_" + std::to_string(current_->token().position().row()) + "_" + std::to_string(current_->token().position().col());   // TODO: 扩展多文件时需要修改
+
+        build_if_statement_ir_begin(if_signature);
+        Token condition = analyse_condition(0);
+        build_if_statement_ir_jz(if_signature);
+        current_ = child(1);
+        for (int i = 0; i < children_size(); ++i) {
+            analyse_statement(i, Symbol("__if__"));
+        }
+        current_ = current_->parent();
+        build_if_statement_ir_else(if_signature);
+        if (children_size() > 2) {
+            current_ = child(2);
+            for (int i = 0; i < children_size(); ++i) {
+                analyse_statement(i, Symbol("__if__"));
+            }
+            current_ = current_->parent();
+        }
+        build_if_statement_ir_end(if_signature);
 
         current_ = current_->parent();
+
         return result;
     }
 
@@ -843,6 +863,23 @@ private:
     void build_while_statement_ir_end(const std::string &signature) {
         ir_.add(PCode(PCode::Type::kJump, "_begin_while" + signature, ir_indent_));
         ir_.add(PCode(PCode::Type::kLabel, "_end_while" + signature, ir_indent_));
+    }
+
+    void build_if_statement_ir_begin(const std::string &signature) {
+        ir_.add(PCode(PCode::Type::kLabel, "_beg_if" + signature, ir_indent_));
+    }
+
+    void build_if_statement_ir_jz(const std::string &signature) {
+        ir_.add(PCode(PCode::Type::kJumpZero, "_else" + signature, ir_indent_));
+    }
+
+    void build_if_statement_ir_else(const std::string &signature) {
+        ir_.add(PCode(PCode::Type::kJump, "_end_if" + signature, ir_indent_));
+        ir_.add(PCode(PCode::Type::kLabel, "_else" + signature, ir_indent_));
+    }
+
+    void build_if_statement_ir_end(const std::string &signature) {
+        ir_.add(PCode(PCode::Type::kLabel, "_end_if" + signature, ir_indent_));
     }
 };
 

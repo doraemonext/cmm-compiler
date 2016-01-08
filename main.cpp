@@ -17,12 +17,14 @@ int main() {
     Lexer lexer(buffer.str());
     Parser parser(lexer, 2);
     parser.parse_program();
+    cout << endl << "语法树:" << endl << endl;
     parser.print_ast();
     cout << endl;
 
     Semantic semantic(parser.ast());
     try {
         semantic.analyse();
+        cout << endl << "中间代码:" << endl << endl;
         semantic.print_ir();
     } catch (const scope_critical_error &e) {
         semantic.print_error_messages();

@@ -1,12 +1,10 @@
-int a, b, c, d;
+int a;
 a = 0;
-b = 1;
-c = 2;
-d = 3;
 
-while (a > 0) {
-    a = a - 1;
+if (a > 0) {
+    print(a);
+    print(a);
+} else {
+    read(a);
+    read(a);
 }
-
-write(a);
-write(c);

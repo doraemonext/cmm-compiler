@@ -160,19 +160,22 @@ void Parser::parse_if_statement() {
     parse_condition();
     match(Token::Type::kRightParen);
     match(Token::Type::kLeftBrace);
+    current_ = current_->add_child(Token::Type::kStatements, forward_token());
     while (forward_token().type() != Token::Type::kRightBrace) {
         parse_statement();
     }
     match(Token::Type::kRightBrace);
+    current_ = current_->parent();
 
     if (forward_token().type() == Token::Type::kElse) {
-        current_->add_child(forward_token());
         match(Token::Type::kElse);
+        current_ = current_->add_child(Token::Type::kStatements, forward_token());
         match(Token::Type::kLeftBrace);
         while (forward_token().type() != Token::Type::kRightBrace) {
             parse_statement();
         }
         match(Token::Type::kRightBrace);
+        current_ = current_->parent();
     }
 
     current_ = current_->parent();
