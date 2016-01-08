@@ -26,6 +26,8 @@ int main() {
         semantic.analyse();
         cout << endl << "中间代码:" << endl << endl;
         semantic.print_ir();
+        semantic.print_error_messages();
+        semantic.print_warning_messages();
     } catch (const scope_critical_error &e) {
         semantic.print_error_messages();
         semantic.print_warning_messages();
