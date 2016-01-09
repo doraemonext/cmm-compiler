@@ -54,3 +54,25 @@ void Symbol::print() const {
     }
     std::cout << "===================================" << std::endl;
 }
+
+// 测试函数
+void StackSymbol::print() const {
+    if (type_ == StackSymbol::Type::kInt) {
+        std::cout << "Int Value: " << value_.int_value << std::endl;
+    } else if (type_ == StackSymbol::Type::kIntArray) {
+        std::cout << "Int Array: ";
+        for (int i = 0; i < (int)value_.int_array.size(); i++) {
+            std::cout << value_.int_array[i] << " ";
+        }
+        std::cout << std::endl;
+    } else if (type_ == StackSymbol::Type::kReal) {
+        std::cout << "Real Value: " << value_.real_value << std::endl;
+    } else if (type_ == StackSymbol::Type::kRealArray) {
+        std::cout << "Real Array: ";
+        for (int i = 0; i < (int)value_.real_array.size(); i++) {
+            std::cout << value_.real_array[i] << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "===================================" << std::endl;
+}

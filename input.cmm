@@ -1,7 +1,6 @@
-int[5] i;
+int a;
+real[5] b;
+real c;
+real[6] d;
 
-i[2] = i[3];
-
-func int main() {
-    return 0;
-}
+write(1 + 2*5-6*10);

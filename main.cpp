@@ -26,13 +26,22 @@ int main() {
         semantic.analyse();
         cout << endl << "中间代码:" << endl << endl;
         semantic.print_ir();
+        semantic.print_warning_messages();
     } catch (const scope_critical_error &e) {
         semantic.print_error_messages();
+        semantic.print_warning_messages();
+        return 0;
     }
-    semantic.print_warning_messages();
 
     Simulator simulator(semantic.ir());
-    simulator.run();
+    try {
+        cout << endl << "运行结果:" << endl << endl;
+        simulator.run();
+    } catch (const simulator_error &e) {
+        std::cout << "[中间代码错误] " << e.what() << std::endl;
+    }
+
+    cout << endl << "END" << endl;
 
     return 0;
 }

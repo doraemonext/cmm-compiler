@@ -214,22 +214,22 @@ public:
     };
 
     // 针对 int 的构造函数
-    StackSymbol(const int &value) : type_(Symbol::Type::kInt) {
+    StackSymbol(const int &value) : type_(StackSymbol::Type::kInt) {
         value_.int_value = value;
     }
 
     // 针对 int_array 的构造函数
-    StackSymbol(const std::vector<int> &value) : type_(Symbol::Type::kIntArray) {
+    StackSymbol(const std::vector<int> &value) : type_(StackSymbol::Type::kIntArray) {
         value_.int_array = value;
     }
 
     // 针对 real 的构造函数
-    StackSymbol(const double &value) : type_(Symbol::Type::kReal) {
+    StackSymbol(const double &value) : type_(StackSymbol::Type::kReal) {
         value_.real_value = value;
     }
 
     // 针对 real_array 的构造函数
-    StackSymbol(const std::vector<double> &value) : type_(Symbol::Type::kRealArray) {
+    StackSymbol(const std::vector<double> &value) : type_(StackSymbol::Type::kRealArray) {
         value_.real_array = value;
     }
 
@@ -313,6 +313,9 @@ public:
             case Type::kRealArray: return "real_array";
         }
     }
+
+    // 测试函数
+    void print() const;
 
 private:
     typedef struct {

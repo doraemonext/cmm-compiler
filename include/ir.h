@@ -192,16 +192,16 @@ public:
                 os << "pop";
                 break;
             case Type::kPopInteger:
-                os << "popi " << pcode.first();
+                os << "pop_id " << pcode.first();
                 break;
             case Type::kPopIntegerArray:
-                os << "popia " << pcode.first() << ", " << pcode.second();
+                os << "pop_arr " << pcode.first() << ", " << pcode.second();
                 break;
             case Type::kPopReal:
-                os << "popr " << pcode.first();
+                os << "pop_id " << pcode.first();
                 break;
             case Type::kPopRealArray:
-                os << "popra " << pcode.first() << ", " << pcode.second();
+                os << "pop_arr " << pcode.first() << ", " << pcode.second();
                 break;
             case Type::kAdd:
                 os << "add";
