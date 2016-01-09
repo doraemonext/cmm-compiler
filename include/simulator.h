@@ -13,7 +13,7 @@
 
 class Simulator {
 public:
-    Simulator(const IR &ir) : ir_(ir), eip_(0) { }
+    Simulator(const IR &ir) : ir_(ir), eip_(0), inloop_(false) { }
 
     void var_integer(const PCode &code);
 
@@ -256,6 +256,7 @@ private:
     std::map<std::string, std::pair<int, int> > func_table_;
     std::map<std::string, int> label_table_;
     int eip_;
+    int inloop_;
 };
 
 #endif //CMM_SIMULATOR_H
@@ -706,9 +707,14 @@ void Simulator::label(const PCode &code) {
     std::string name = code.first();
 
     if (name.substr(0, 7) == "_begin_") {
+        if (inloop_) {
+            tree_.pop();
+        }
         tree_.push();
+        inloop_ = true;
     } else if (name.substr(0, 5) == "_end_") {
         tree_.pop();
+        inloop_ = false;
     } else if (name.substr(0, 6) == "_else_") {
         tree_.pop();
         tree_.push();

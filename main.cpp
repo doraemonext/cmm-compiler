@@ -41,7 +41,5 @@ int main() {
         std::cout << "[中间代码错误] " << e.what() << std::endl;
     }
 
-    cout << endl << "END" << endl;
-
     return 0;
 }
