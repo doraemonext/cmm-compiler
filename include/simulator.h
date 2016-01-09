@@ -730,18 +730,30 @@ void Simulator::jump_not_zero(const PCode &code) {
 void Simulator::label(const PCode &code) {
     std::string name = code.first();
 
-    if (name.substr(0, 7) == "_begin_") {
-        if (inloop_) {
-            tree_.pop();
-        }
+    if (name.substr(0, 13) == "_begin_while_") {
         tree_.push();
-        inloop_ = true;
-    } else if (name.substr(0, 5) == "_end_") {
-        tree_.pop();
-        inloop_ = false;
+        tree_.define(Symbol(name, 1, true));
+    } else if (name.substr(0, 11) == "_end_while_") {
+        while (true) {
+            bool is_found = false;
+            try {
+                tree_.resolve("_begin_while_" + name.substr(11));
+                tree_.pop();
+                is_found = true;
+            } catch (const scope_not_found &e) {
+                is_found = false;
+            }
+            if (!is_found) {
+                break;
+            }
+        }
+    } else if (name.substr(0, 10) == "_begin_if_") {
+        tree_.push();
     } else if (name.substr(0, 6) == "_else_") {
         tree_.pop();
         tree_.push();
+    } else if (name.substr(0, 8) == "_end_if_") {
+        tree_.pop();
     }
 
     inc_eip();
