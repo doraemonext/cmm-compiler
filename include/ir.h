@@ -313,7 +313,7 @@ public:
 
     friend std::ostream &operator << (std::ostream &os, const IR &ir) {
         for (int i = 0; i < ir.size(); ++i) {
-            os << ir.at(i) << std::endl;
+            os << i << ":\t\t| " << ir.at(i) << std::endl;
         }
         return os;
     }

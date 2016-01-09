@@ -50,7 +50,15 @@ public:
 
     void print(const int &indent = 0) const {
         for (int i = 0; i < indent; ++i) {
-            std::cout << " ";
+            if (i == indent - 4) {
+                std::cout << "┗";
+            } else if (i > indent - 4) {
+                std::cout << "━";
+            } else if (i % 4 == 0) {
+                std::cout << "┃";
+            } else {
+                std::cout << " ";
+            }
         }
         std::cout << "Token: \"" << token_.content() << "\"<\"" << token_.type_name() << "\"> (Children: " << children_.size() << ")" << std::endl;
         for (std::vector<AbstractSyntaxNode *>::const_iterator it = children_.begin(); it != children_.end(); ++it) {

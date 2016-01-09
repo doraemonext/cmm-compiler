@@ -1,8 +1,10 @@
 int a, b;
 a = 2;
 b = 2;
-if (a <> b) {
-write(1);
-} else {
-write(2);
+while(a > 0) {
+    int b;
+    b = 100;
+    write(b);
+    a = a - 1;
 }
+write(b);

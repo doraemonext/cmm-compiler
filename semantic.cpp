@@ -158,18 +158,22 @@ Token Semantic::analyse_if_statement(const int &pos, const Symbol &function_symb
     build_if_statement_ir_begin(if_signature);
     Token condition = analyse_condition(0);
     build_if_statement_ir_jz(if_signature);
+    tree_.push();
     current_ = child(1);
     for (int i = 0; i < children_size(); ++i) {
         analyse_statement(i, function_symbol);
     }
     current_ = current_->parent();
+    tree_.pop();
     build_if_statement_ir_else(if_signature);
     if (children_size() > 2) {
+        tree_.push();
         current_ = child(2);
         for (int i = 0; i < children_size(); ++i) {
             analyse_statement(i, function_symbol);
         }
         current_ = current_->parent();
+        tree_.pop();
     }
     build_if_statement_ir_end(if_signature);
 
@@ -187,11 +191,13 @@ Token Semantic::analyse_while_statement(const int &pos, const Symbol &function_s
     build_while_statement_ir_begin(while_signature);
     Token condition = analyse_condition(0);
     build_while_statement_ir_jz(while_signature);
+    tree_.push();
     current_ = child(1);
     for (int i = 0; i < children_size(); ++i) {
         analyse_statement(i, function_symbol);
     }
     current_ = current_->parent();
+    tree_.pop();
     build_while_statement_ir_end(while_signature);
 
     current_ = current_->parent();
@@ -838,7 +844,7 @@ void Semantic::build_condition_ir(const Token &op) {
 }
 
 void Semantic::build_while_statement_ir_begin(const std::string &signature) {
-    ir_.add(PCode(PCode::Type::kLabel, "_beg_while" + signature, ir_indent_));
+    ir_.add(PCode(PCode::Type::kLabel, "_begin_while" + signature, ir_indent_));
 }
 
 void Semantic::build_while_statement_ir_jz(const std::string &signature) {
@@ -851,7 +857,7 @@ void Semantic::build_while_statement_ir_end(const std::string &signature) {
 }
 
 void Semantic::build_if_statement_ir_begin(const std::string &signature) {
-    ir_.add(PCode(PCode::Type::kLabel, "_beg_if" + signature, ir_indent_));
+    ir_.add(PCode(PCode::Type::kLabel, "_begin_if" + signature, ir_indent_));
 }
 
 void Semantic::build_if_statement_ir_jz(const std::string &signature) {

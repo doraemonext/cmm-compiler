@@ -45,8 +45,6 @@ public:
 
     void divide(const PCode &code);
 
-    void print(const PCode &code);
-
     void mod(const PCode &code);
 
     void compare_equal(const PCode &code);
@@ -69,11 +67,14 @@ public:
 
     void label(const PCode &code);
 
+    void print(const PCode &code);
+
     // 每次运行一条指令
     int run_instruction() {
         if (eip_ >= ir_.size()) {
             return 0;
         }
+//        std::cout << "Eip: " << eip_ << std::endl;
 
         const PCode &line = ir_.at(eip_);
         switch (line.type()) {
@@ -233,11 +234,6 @@ public:
         }
         if (tmp <= 0) {
             std::cout << "over 3000 times." << std::endl;
-        }
-
-        for (int i = 0; i < stack_.size(); ++i) {
-            stack_[i].print();
-            std::cout << std::endl;
         }
     }
 
@@ -679,21 +675,6 @@ void Simulator::compare_less_equal(const PCode &code) {
     inc_eip();
 }
 
-void Simulator::print(const PCode &code) {
-    StackSymbol symbol = stack_.back();
-    stack_.pop_back();
-
-    if (symbol.type() == StackSymbol::Type::kInt) {
-        std::cout << symbol.int_value() << std::endl;
-    } else if (symbol.type() == StackSymbol::Type::kReal) {
-        std::cout << symbol.real_value() << std::endl;
-    } else {
-        throw simulator_error(eip(), "不合法的输出参数");
-    }
-
-    inc_eip();
-}
-
 void Simulator::jump(const PCode &code) {
     int target = label_table_[code.first()];
     set_eip(target);
@@ -722,5 +703,31 @@ void Simulator::jump_not_zero(const PCode &code) {
 }
 
 void Simulator::label(const PCode &code) {
+    std::string name = code.first();
+
+    if (name.substr(0, 7) == "_begin_") {
+        tree_.push();
+    } else if (name.substr(0, 5) == "_end_") {
+        tree_.pop();
+    } else if (name.substr(0, 6) == "_else_") {
+        tree_.pop();
+        tree_.push();
+    }
+
+    inc_eip();
+}
+
+void Simulator::print(const PCode &code) {
+    StackSymbol symbol = stack_.back();
+    stack_.pop_back();
+
+    if (symbol.type() == StackSymbol::Type::kInt) {
+        std::cout << symbol.int_value() << std::endl;
+    } else if (symbol.type() == StackSymbol::Type::kReal) {
+        std::cout << symbol.real_value() << std::endl;
+    } else {
+        throw simulator_error(eip(), "不合法的输出参数");
+    }
+
     inc_eip();
 }
