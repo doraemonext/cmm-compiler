@@ -8,5 +8,5 @@ func int factor(int x)
 }
 
 int b;
-b = factor(100);
+b = factor(10000);
 write(b);

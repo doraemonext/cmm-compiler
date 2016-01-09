@@ -236,8 +236,7 @@ public:
         int pos = 0;
 
         // 添加主函数调用
-        // ir_.add(PCode(PCode::Type::kCall, "main"));
-        // ir_.add(PCode(PCode::Type::kExit, "~"));
+        ir_.add(PCode(PCode::Type::kCall, "main"));
 
         // 记录所有 Label 和函数 Label 相对位置
         for (pos = 0; pos < ir_.size(); ++pos) {
@@ -253,17 +252,12 @@ public:
         }
 
         eip_ = 0;
-        int return_status = -1;
-        int tmp = 300000;
-        while (tmp > 0) {
+        int return_status;
+        while (true) {
             return_status = run_instruction();
             if (return_status >= 0) {
                 break;
             }
-            tmp--;
-        }
-        if (tmp <= 0) {
-            std::cout << "over 3000 times." << std::endl;
         }
     }
 
