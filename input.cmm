@@ -1,6 +1,8 @@
-int a;
-real[5] b;
-real c;
-real[6] d;
-
-write(1 + 2*5-6*10);
+int a, b;
+a = 2;
+b = 2;
+if (a <> b) {
+write(1);
+} else {
+write(2);
+}

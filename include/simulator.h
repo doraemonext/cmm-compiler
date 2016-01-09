@@ -47,6 +47,28 @@ public:
 
     void print(const PCode &code);
 
+    void mod(const PCode &code);
+
+    void compare_equal(const PCode &code);
+
+    void compare_not_equal(const PCode &code);
+
+    void compare_greater_than(const PCode &code);
+
+    void compare_less_than(const PCode &code);
+
+    void compare_greater_equal(const PCode &code);
+
+    void compare_less_equal(const PCode &code);
+
+    void jump(const PCode &code);
+
+    void jump_zero(const PCode &code);
+
+    void jump_not_zero(const PCode &code);
+
+    void label(const PCode &code);
+
     // 每次运行一条指令
     int run_instruction() {
         if (eip_ >= ir_.size()) {
@@ -55,6 +77,9 @@ public:
 
         const PCode &line = ir_.at(eip_);
         switch (line.type()) {
+            case PCode::Type::kLabel:
+                label(line);
+                break;
             case PCode::Type::kStartFunc:
                 break;
             case PCode::Type::kArgInteger:
@@ -119,18 +144,25 @@ public:
                 divide(line);
                 break;
             case PCode::Type::kMod:
+                mod(line);
                 break;
             case PCode::Type::kCompareEqual:
+                compare_equal(line);
                 break;
             case PCode::Type::kCompareNotEqual:
+                compare_not_equal(line);
                 break;
             case PCode::Type::kCompareGreaterThan:
+                compare_greater_than(line);
                 break;
             case PCode::Type::kCompareLessThan:
+                compare_less_than(line);
                 break;
             case PCode::Type::kCompareGreaterEqual:
+                compare_greater_equal(line);
                 break;
             case PCode::Type::kCompareLessEqual:
+                compare_less_equal(line);
                 break;
             case PCode::Type::kAnd:
                 break;
@@ -141,10 +173,13 @@ public:
             case PCode::Type::kNegative:
                 break;
             case PCode::Type::kJump:
+                jump(line);
                 break;
             case PCode::Type::kJumpZero:
+                jump_zero(line);
                 break;
             case PCode::Type::kJumpNotZero:
+                jump_not_zero(line);
                 break;
             case PCode::Type::kPrint:
                 print(line);
@@ -474,6 +509,176 @@ void Simulator::divide(const PCode &code) {
     inc_eip();
 }
 
+void Simulator::mod(const PCode &code) {
+    StackSymbol first = stack_.back();
+    stack_.pop_back();
+    StackSymbol second = stack_.back();
+    stack_.pop_back();
+
+    double result;
+    if (second.type() == StackSymbol::Type::kInt) {
+        result = (double)second.int_value();
+    } else if (second.type() == StackSymbol::Type::kReal) {
+        result = (double)second.real_value();
+    } else {
+        throw simulator_error(eip(), "不合法的求余操作数");
+    }
+    if (first.type() == StackSymbol::Type::kInt) {
+        if (first.int_value() == 0) {
+            throw simulator_error(eip(), "mod 除数不能为 0");
+        }
+        result = std::fmod(result, (double)first.int_value());
+    } else if (first.type() == StackSymbol::Type::kReal) {
+        if (std::fabs(first.real_value()) < 1e-8) {
+            throw simulator_error(eip(), "mod 除数不能为 0");
+        }
+        result = std::fmod(result, (double)first.real_value());
+    } else {
+        throw simulator_error(eip(), "不合法的求余操作数");
+    }
+
+    stack_.push_back(StackSymbol(result));
+    inc_eip();
+}
+
+void Simulator::compare_equal(const PCode &code) {
+    StackSymbol right = stack_.back();
+    stack_.pop_back();
+    StackSymbol left = stack_.back();
+    stack_.pop_back();
+
+    if (left.type() == StackSymbol::Type::kInt) {
+        if (right.type() == StackSymbol::Type::kInt) {
+            stack_.push_back(StackSymbol((int)(left.int_value() == right.int_value())));
+        } else {
+            stack_.push_back(StackSymbol((int)((double)left.int_value() == right.real_value())));
+        }
+    } else {
+        if (right.type() == StackSymbol::Type::kInt) {
+            stack_.push_back(StackSymbol((int)(left.real_value() == (double)right.int_value())));
+        } else {
+            stack_.push_back(StackSymbol((int)(left.real_value() == right.real_value())));
+        }
+    }
+
+    inc_eip();
+}
+
+void Simulator::compare_not_equal(const PCode &code) {
+    StackSymbol right = stack_.back();
+    stack_.pop_back();
+    StackSymbol left = stack_.back();
+    stack_.pop_back();
+
+    if (left.type() == StackSymbol::Type::kInt) {
+        if (right.type() == StackSymbol::Type::kInt) {
+            stack_.push_back(StackSymbol((int)(left.int_value() != right.int_value())));
+        } else {
+            stack_.push_back(StackSymbol((int)((double)left.int_value() != right.real_value())));
+        }
+    } else {
+        if (right.type() == StackSymbol::Type::kInt) {
+            stack_.push_back(StackSymbol((int)(left.real_value() != (double)right.int_value())));
+        } else {
+            stack_.push_back(StackSymbol((int)(left.real_value() != right.real_value())));
+        }
+    }
+
+    inc_eip();
+}
+
+void Simulator::compare_greater_than(const PCode &code) {
+    StackSymbol right = stack_.back();
+    stack_.pop_back();
+    StackSymbol left = stack_.back();
+    stack_.pop_back();
+
+    if (left.type() == StackSymbol::Type::kInt) {
+        if (right.type() == StackSymbol::Type::kInt) {
+            stack_.push_back(StackSymbol((int)(left.int_value() > right.int_value())));
+        } else {
+            stack_.push_back(StackSymbol((int)((double)left.int_value() > right.real_value())));
+        }
+    } else {
+        if (right.type() == StackSymbol::Type::kInt) {
+            stack_.push_back(StackSymbol((int)(left.real_value() > (double)right.int_value())));
+        } else {
+            stack_.push_back(StackSymbol((int)(left.real_value() > right.real_value())));
+        }
+    }
+
+    inc_eip();
+}
+
+void Simulator::compare_less_than(const PCode &code) {
+    StackSymbol right = stack_.back();
+    stack_.pop_back();
+    StackSymbol left = stack_.back();
+    stack_.pop_back();
+
+    if (left.type() == StackSymbol::Type::kInt) {
+        if (right.type() == StackSymbol::Type::kInt) {
+            stack_.push_back(StackSymbol((int)(left.int_value() < right.int_value())));
+        } else {
+            stack_.push_back(StackSymbol((int)((double)left.int_value() < right.real_value())));
+        }
+    } else {
+        if (right.type() == StackSymbol::Type::kInt) {
+            stack_.push_back(StackSymbol((int)(left.real_value() < (double)right.int_value())));
+        } else {
+            stack_.push_back(StackSymbol((int)(left.real_value() < right.real_value())));
+        }
+    }
+
+    inc_eip();
+}
+
+void Simulator::compare_greater_equal(const PCode &code) {
+    StackSymbol right = stack_.back();
+    stack_.pop_back();
+    StackSymbol left = stack_.back();
+    stack_.pop_back();
+
+    if (left.type() == StackSymbol::Type::kInt) {
+        if (right.type() == StackSymbol::Type::kInt) {
+            stack_.push_back(StackSymbol((int)(left.int_value() >= right.int_value())));
+        } else {
+            stack_.push_back(StackSymbol((int)((double)left.int_value() >= right.real_value())));
+        }
+    } else {
+        if (right.type() == StackSymbol::Type::kInt) {
+            stack_.push_back(StackSymbol((int)(left.real_value() >= (double)right.int_value())));
+        } else {
+            stack_.push_back(StackSymbol((int)(left.real_value() >= right.real_value())));
+        }
+    }
+
+    inc_eip();
+}
+
+void Simulator::compare_less_equal(const PCode &code) {
+    StackSymbol right = stack_.back();
+    stack_.pop_back();
+    StackSymbol left = stack_.back();
+    stack_.pop_back();
+
+    if (left.type() == StackSymbol::Type::kInt) {
+        if (right.type() == StackSymbol::Type::kInt) {
+            stack_.push_back(StackSymbol((int)(left.int_value() <= right.int_value())));
+        } else {
+            stack_.push_back(StackSymbol((int)((double)left.int_value() <= right.real_value())));
+        }
+    } else {
+        if (right.type() == StackSymbol::Type::kInt) {
+            stack_.push_back(StackSymbol((int)(left.real_value() <= (double)right.int_value())));
+        } else {
+            stack_.push_back(StackSymbol((int)(left.real_value() <= right.real_value())));
+        }
+    }
+
+    inc_eip();
+}
+
 void Simulator::print(const PCode &code) {
     StackSymbol symbol = stack_.back();
     stack_.pop_back();
@@ -486,5 +691,36 @@ void Simulator::print(const PCode &code) {
         throw simulator_error(eip(), "不合法的输出参数");
     }
 
+    inc_eip();
+}
+
+void Simulator::jump(const PCode &code) {
+    int target = label_table_[code.first()];
+    set_eip(target);
+}
+
+void Simulator::jump_zero(const PCode &code) {
+    int target = label_table_[code.first()];
+    StackSymbol symbol = stack_.back();
+    stack_.pop_back();
+    if (symbol.int_value() == 0) {
+        set_eip(target);
+    } else {
+        inc_eip();
+    }
+}
+
+void Simulator::jump_not_zero(const PCode &code) {
+    int target = label_table_[code.first()];
+    StackSymbol symbol = stack_.back();
+    stack_.pop_back();
+    if (symbol.int_value() != 0) {
+        set_eip(target);
+    } else {
+        inc_eip();
+    }
+}
+
+void Simulator::label(const PCode &code) {
     inc_eip();
 }
