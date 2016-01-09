@@ -703,7 +703,7 @@ void Semantic::build_function_ir_start(const Token &identity) {
 }
 
 void Semantic::build_function_ir_args(const std::vector<std::pair<Token, Token> > &args) {
-    for (int i = 0; i < (int)args.size(); ++i) {
+    for (int i = (int)args.size() - 1; i >= 0; --i) {
         switch (args[i].first.type()) {
             case Token::Type::kInt:
                 ir_.add(PCode(PCode::Type::kArgInteger, args[i].second.content(), ir_indent_));
@@ -728,7 +728,7 @@ void Semantic::build_function_ir_end(const Token &identity) {
 }
 
 void Semantic::build_return_statement_ir(const Token &literal) {
-    ir_.add(PCode(PCode::Type::kReturn, "~", ir_indent_));
+    ir_.add(PCode(PCode::Type::kReturn, ir_indent_));
 }
 
 void Semantic::build_declare_statement_ir(const Token &declare_keyword, const Token &identity) {

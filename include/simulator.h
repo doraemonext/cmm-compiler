@@ -15,6 +15,12 @@ class Simulator {
 public:
     Simulator(const IR &ir) : ir_(ir), eip_(0), inloop_(false) { }
 
+    void start_func(const PCode &code);
+
+    void arg_integer(const PCode &code);
+
+    void arg_real(const PCode &code);
+
     void var_integer(const PCode &code);
 
     void var_integer_array(const PCode &code);
@@ -79,12 +85,17 @@ public:
 
     void exit_program(const PCode &code);
 
+    void call(const PCode &code);
+
+    void end_func(const PCode &code);
+
+    void return_function(const PCode &code);
+
     // 每次运行一条指令
     int run_instruction() {
         if (eip_ >= ir_.size()) {
             return 0;
         }
-//        std::cout << "Eip: " << eip_ << std::endl;
 
         const PCode &line = ir_.at(eip_);
         switch (line.type()) {
@@ -92,20 +103,24 @@ public:
                 label(line);
                 break;
             case PCode::Type::kStartFunc:
+                start_func(line);
                 break;
             case PCode::Type::kArgInteger:
-                break;
             case PCode::Type::kArgIntegerArray:
+                arg_integer(line);
                 break;
             case PCode::Type::kArgReal:
-                break;
             case PCode::Type::kArgRealArray:
+                arg_real(line);
                 break;
             case PCode::Type::kReturn:
+                return_function(line);
                 break;
             case PCode::Type::kEndFunc:
+                end_func(line);
                 break;
             case PCode::Type::kCall:
+                call(line);
                 break;
             case PCode::Type::kVarInteger:
                 var_integer(line);
@@ -239,7 +254,7 @@ public:
 
         eip_ = 0;
         int return_status = -1;
-        int tmp = 3000;
+        int tmp = 300000;
         while (tmp > 0) {
             return_status = run_instruction();
             if (return_status >= 0) {
@@ -284,6 +299,61 @@ private:
 };
 
 #endif //CMM_SIMULATOR_H
+
+void Simulator::start_func(const PCode &code) {
+    set_eip(func_table_[code.first()].second + 1);
+}
+
+void Simulator::arg_integer(const PCode &code) {
+    StackSymbol back = stack_.back();
+    stack_.pop_back();
+
+    if (back.type() == StackSymbol::Type::kInt) {
+        tree_.define(Symbol(code.first(), (int)back.int_value(), true));
+    } else if (back.type() == StackSymbol::Type::kReal) {
+        tree_.define(Symbol(code.first(), (int)back.real_value(), true));
+    } else {
+        throw simulator_error(eip(), "不支持的函数调用实参类型");
+    }
+
+    inc_eip();
+}
+
+void Simulator::arg_real(const PCode &code) {
+    StackSymbol back = stack_.back();
+    stack_.pop_back();
+
+    if (back.type() == StackSymbol::Type::kInt) {
+        tree_.define(Symbol(code.first(), (double)back.int_value(), true));
+    } else if (back.type() == StackSymbol::Type::kReal) {
+        tree_.define(Symbol(code.first(), (double)back.real_value(), true));
+    } else {
+        throw simulator_error(eip(), "不支持的函数调用实参类型");
+    }
+
+    inc_eip();
+}
+
+void Simulator::call(const PCode &code) {
+    const std::pair<int, int> &func_pos = func_table_[code.first()];
+    tree_.push();
+    tree_.define(Symbol("__ret__", eip() + 1, true));
+    set_eip(func_pos.first + 1);
+}
+
+void Simulator::return_function(const PCode &code) {
+    set_eip(tree_.resolve("__ret__").int_value());
+    while (tree_.resolve_scope("__ret__")->level() != tree_.current()->level()) {
+        tree_.pop();
+    }
+    tree_.pop();
+}
+
+void Simulator::end_func(const PCode &code) {
+    stack_.push_back(StackSymbol(0));
+    set_eip(tree_.resolve("__ret__").int_value());
+    tree_.pop();
+}
 
 void Simulator::var_integer(const PCode &code) {
     tree_.define(Symbol(code.first(), 0, false));

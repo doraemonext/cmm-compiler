@@ -153,7 +153,7 @@ public:
                 os << "argra " << pcode.first();
                 break;
             case Type::kReturn:
-                os << "ret " << pcode.first();
+                os << "ret";
                 break;
             case Type::kEndFunc:
                 os << "ENDFUNC";
