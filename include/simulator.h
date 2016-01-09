@@ -69,6 +69,16 @@ public:
 
     void print(const PCode &code);
 
+    void read_int(const PCode &code);
+
+    void read_int_array(const PCode &code);
+
+    void read_real(const PCode &code);
+
+    void read_real_array(const PCode &code);
+
+    void exit_program(const PCode &code);
+
     // 每次运行一条指令
     int run_instruction() {
         if (eip_ >= ir_.size()) {
@@ -186,14 +196,19 @@ public:
                 print(line);
                 break;
             case PCode::Type::kReadInt:
+                read_int(line);
                 break;
             case PCode::Type::kReadIntArray:
+                read_int_array(line);
                 break;
             case PCode::Type::kReadReal:
+                read_real(line);
                 break;
             case PCode::Type::kReadRealArray:
+                read_real_array(line);
                 break;
             case PCode::Type::kExit:
+                exit_program(line);
                 break;
             default:
                 break;
@@ -257,6 +272,15 @@ private:
     std::map<std::string, int> label_table_;
     int eip_;
     int inloop_;
+
+    int get_second_parameter(const std::string &str) {
+        if (Recognition::is_integer(str)) {
+            return std::stoi(str);
+        } else {
+            Symbol symbol = tree_.resolve(str);
+            return symbol.int_value();
+        }
+    }
 };
 
 #endif //CMM_SIMULATOR_H
@@ -735,5 +759,55 @@ void Simulator::print(const PCode &code) {
         throw simulator_error(eip(), "不合法的输出参数");
     }
 
+    inc_eip();
+}
+
+void Simulator::read_int(const PCode &code) {
+    int input = 0;
+    std::cin >> input;
+    Symbol &symbol = tree_.resolve(code.first());
+    symbol.set_value(input);
+    symbol.set_assigned();
+
+    inc_eip();
+}
+
+void Simulator::read_int_array(const PCode &code) {
+    int input = 0;
+    Symbol &symbol = tree_.resolve(code.first());
+
+    std::cin >> input;
+    std::vector<int> array = symbol.int_array();
+    array[get_second_parameter(code.second())] = input;
+    symbol.set_value(array);
+    symbol.set_assigned();
+
+    inc_eip();
+}
+
+void Simulator::read_real(const PCode &code) {
+    double input = 0.0;
+    std::cin >> input;
+    Symbol &symbol = tree_.resolve(code.first());
+    symbol.set_value(input);
+    symbol.set_assigned();
+
+    inc_eip();
+}
+
+void Simulator::read_real_array(const PCode &code) {
+    double input = 0;
+    Symbol &symbol = tree_.resolve(code.first());
+
+    std::cin >> input;
+    std::vector<double> array = symbol.real_array();
+    array[get_second_parameter(code.second())] = input;
+    symbol.set_value(array);
+    symbol.set_assigned();
+
+    inc_eip();
+}
+
+void Simulator::exit_program(const PCode &code) {
     inc_eip();
 }

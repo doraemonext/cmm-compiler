@@ -1,11 +1,4 @@
 int a, b;
-a = 2;
-b = 2;
-write(b);
-while(a > 0) {
-    int b;
-    b = 100;
-    write(b);
-    a = a - 1;
-}
-write(b);
+real[5] c;
+read(c[2]);
+write(c[2]);

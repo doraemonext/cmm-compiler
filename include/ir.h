@@ -261,24 +261,16 @@ public:
                 os << "print";
                 break;
             case Type::kReadInt:
-                os << "readi" << std::endl;
-                pcode.print_indent(os, pcode);
-                os << "popi " << pcode.first();
+                os << "readi " << pcode.first();
                 break;
             case Type::kReadIntArray:
-                os << "readi" << std::endl;
-                pcode.print_indent(os, pcode);
-                os << "popia " << pcode.first() << ", " << pcode.second();
+                os << "readia " << pcode.first() << ", " << pcode.second();
                 break;
             case Type::kReadReal:
-                os << "readr" << std::endl;
-                pcode.print_indent(os, pcode);
-                os << "popr " << pcode.first();
+                os << "readr " << pcode.first();
                 break;
             case Type::kReadRealArray:
-                os << "readr" << std::endl;
-                pcode.print_indent(os, pcode);
-                os << "popra " << pcode.first() << ", " << pcode.second();
+                os << "readra " << pcode.first() << ", " << pcode.second();
                 break;
             case Type::kExit:
                 os << "exit " << pcode.first();
