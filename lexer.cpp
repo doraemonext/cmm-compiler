@@ -79,7 +79,7 @@ Token Lexer::next_token() {
                     Token t = match_times();
                     if (t.type() == Token::Type::kRightBlockComment) {
                         in_block_comment_ = false;
-                        break;
+                        return Token(Token::Type::kRightBlockComment, TokenPosition(position_, 2));
                     }
                 }
             }

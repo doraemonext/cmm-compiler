@@ -15,8 +15,16 @@ Parser::Parser(const Lexer &lexer, const int &total) {
 // 获取下一个 Token 并移动当前位置
 void Parser::consume() {
     lookahead_[index_] = lexer_.next_token();
-    while (lookahead_[index_].type() == Token::Type::kLeftBlockComment || lookahead_[index_].type() == Token::Type::kLineComment) {
+    while (lookahead_[index_].type() == Token::Type::kLineComment) {
         lookahead_[index_] = lexer_.next_token();
+    }
+    if (lookahead_[index_].type() == Token::Type::kLeftBlockComment) {
+        lookahead_[index_] = lexer_.next_token();
+        if (lookahead_[index_].type() == Token::Type::kRightBlockComment) {
+            lookahead_[index_] = lexer_.next_token();
+        } else {
+            throw parser_exception(lookahead_[index_].position(), "未闭合的注释块");
+        }
     }
     index_ = (index_ + 1) % total_;
 }
@@ -29,6 +37,7 @@ const Token &Parser::forward_token(const int &step = 1) const {
 // 尝试将当前的下一个 Token 与预期 Token 类型比对
 Token Parser::match(const Token::Type &x) {
     Token token = forward_token();
+
     if (token.type() == x) {
         consume();
         return token;

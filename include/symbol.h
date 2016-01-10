@@ -330,4 +330,3 @@ private:
 };
 
 #endif //CMM_SYMBOL_H
-

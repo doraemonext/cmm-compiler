@@ -9,8 +9,12 @@
 
 using namespace std;
 
-int main() {
-    std::ifstream t("input.cmm");
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        std::cout << "Error: 需要传入源码所在路径作为第一个参数" << std::endl;
+        exit(1);
+    }
+    std::ifstream t(argv[1]);
     std::stringstream buffer;
     buffer << t.rdbuf();
 
