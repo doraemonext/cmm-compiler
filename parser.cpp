@@ -66,7 +66,7 @@ void Parser::parse_program() {
         if (forward_token().type() == Token::Type::kFunc) {
             parse_function();
         } else {
-            parse_statement();
+            parse_statement(false);
         }
     }
 }
@@ -127,9 +127,20 @@ void Parser::parse_function() {
 
 // 解析语句
 // statement: if_statement | while_statement | read_statement | write_statement | assign_statement | declare_statement | return_statement | SEMICOLON ;
-void Parser::parse_statement() {
+void Parser::parse_statement(bool in_func) {
     current_ = current_->add_child(Token::Type::kStatement, forward_token());
     std::stringstream buffer;
+
+    if (!in_func && (forward_token().type() == Token::Type::kIf ||
+                     forward_token().type() == Token::Type::kWhile ||
+                     forward_token().type() == Token::Type::kRead ||
+                     forward_token().type() == Token::Type::kWrite ||
+                     (forward_token().type() == Token::Type::kIdentity && forward_token(2).type() == Token::Type::kLeftParen) ||
+                     forward_token().type() == Token::Type::kReturn)) {
+        buffer << "\"" << forward_token().type_name() << "\" 语句位于函数体外无效";
+        throw parser_exception(forward_token().position(), buffer.str());
+    }
+
 
     if (forward_token().type() == Token::Type::kIf) {
         parse_if_statement();

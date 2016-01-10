@@ -1,18 +1,55 @@
 func int main()
 {
-    int a_3;
-    int i;
+    int a_3,i,j;
     i = 0;
     int[2] array;
     array[0] = 1;
-    array[i] = 2;
+    array[1] = 0-2;
     while (i < 6) {
         write(i);
         i = i + 1;
     }
     i = 0;
+    read(i);
     while (i < 2) {
         write(array[i]);
         i = i + 1;
     }
+    // sort the array
+    int m,n;
+    m = 0;
+    n = 0;
+    int[10] adex;
+    adex[0] = 9;
+    adex[1] = 3;
+    adex[2] = 6;
+    adex[3] = 11;
+    adex[4] = 102;
+    adex[5] = 33;
+    adex[6] = 56;
+    adex[7] = 1;
+    adex[8] = 18;
+    adex[9] = 32;
+    while(i<10)
+    {
+        while((i+j)<9)
+        {
+            if(adex[j]>adex[j+1])
+            {
+                int temp;
+                temp = adex[j];
+                adex[j] = adex[j+1];
+                adex[j+1] = temp;
+            }
+            j = j+1;
+        }
+        i = i+1;
+    }
+    i = 0;
+    while(i<10)
+    {
+        write(adex[i]);
+        i = i+1;
+    }
+
 }

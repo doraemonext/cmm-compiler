@@ -32,7 +32,7 @@ public:
 
     // 解析语句
     // statement: if_statement | while_statement | read_statement | write_statement | assign_statement | declare_statement | return_statement | SEMICOLON ;
-    void parse_statement();
+    void parse_statement(bool in_func = true);
 
     // 解析 if 语句
     // if_statement: IF LPAREN condition RPAREN LBRACE statements RBRACE (ELSE LBRACE statements RBRACE)? ;
