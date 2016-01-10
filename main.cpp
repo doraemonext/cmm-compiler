@@ -16,7 +16,15 @@ int main() {
 
     Lexer lexer(buffer.str());
     Parser parser(lexer, 2);
-    parser.parse_program();
+    try {
+        parser.parse_program();
+    } catch (const parser_exception &e) {
+        std::cout << e.what() << std::endl;
+        exit(0);
+    } catch (const lexer_exception &e) {
+        std::cout << e.what() << std::endl;
+        exit(0);
+    }
     cout << endl << "语法树:" << endl << endl;
     parser.print_ast();
     cout << endl;

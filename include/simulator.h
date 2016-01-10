@@ -458,9 +458,9 @@ void Simulator::pop_array(const PCode &code) {
     if (symbol.type() == Symbol::Type::kIntArray) {
         std::vector<int> array = symbol.int_array();
         if (back.type() == StackSymbol::Type::kInt) {
-            array[std::stoi(code.second())] = (int) back.int_value();
+            array[get_second_parameter(code.second())] = (int) back.int_value();
         } else if (back.type() == StackSymbol::Type::kReal) {
-            array[std::stoi(code.second())] = (int) back.real_value();
+            array[get_second_parameter(code.second())] = (int) back.real_value();
         } else {
             throw simulator_error(eip(), "无法取出栈顶元素");
         }
@@ -468,9 +468,9 @@ void Simulator::pop_array(const PCode &code) {
     } else if (symbol.type() == Symbol::Type::kRealArray) {
         std::vector<double> array = symbol.real_array();
         if (back.type() == StackSymbol::Type::kInt) {
-            array[std::stoi(code.second())] = (double) back.int_value();
+            array[get_second_parameter(code.second())] = (double) back.int_value();
         } else if (back.type() == StackSymbol::Type::kReal) {
-            array[std::stoi(code.second())] = (double) back.real_value();
+            array[get_second_parameter(code.second())] = (double) back.real_value();
         } else {
             throw simulator_error(eip(), "无法取出栈顶元素");
         }

@@ -272,9 +272,9 @@ Token Semantic::analyse_assign_statement(const int &pos) {
     }
 
     // 检查数组偏移量是否越界
-    if (left_identity.type() == Token::Type::kIntArray || left_identity.type() == Token::Type::kRealArray) {
-        if ((left_identity_symbol.type() == Symbol::Type::kIntArray && left_identity_symbol.int_array().size() <= std::stoi(left_identity.extra().at(1))) ||
-            (left_identity_symbol.type() == Symbol::Type::kRealArray && left_identity_symbol.real_array().size() <= std::stoi(left_identity.extra().at(1)))) {
+    if (left_identity.type() == Token::Type::kIdentityArray) {
+        if ((left_identity_symbol.type() == Symbol::Type::kIntArray && Recognition::is_integer(left_identity.extra().at(1)) && left_identity_symbol.int_array().size() <= std::stoi(left_identity.extra().at(1))) ||
+            (left_identity_symbol.type() == Symbol::Type::kRealArray && Recognition::is_integer(left_identity.extra().at(1)) && left_identity_symbol.real_array().size() <= std::stoi(left_identity.extra().at(1)))) {
             add_error_messages(left_identity.position(), "数组 \"" + left_identity.content() + "\" 的偏移地址越界");
             throw scope_critical_error();
         }
@@ -576,8 +576,8 @@ Token Semantic::analyse_factor(const int &pos) {
             if (identity_symbol.type() == Symbol::Type::kInt || identity_symbol.type() == Symbol::Type::kReal) {
                 add_error_messages(identity.position(), "不能将数组运算符用于非数组变量 \"" + identity.content() + "\" 上");
                 throw scope_critical_error();
-            } else if ((identity_symbol.type() == Symbol::Type::kIntArray && std::stoi(identity.extra().at(1)) >= identity_symbol.int_array().size()) ||
-                       (identity_symbol.type() == Symbol::Type::kRealArray && std::stoi(identity.extra().at(1)) >= identity_symbol.real_array().size())) {
+            } else if ((identity_symbol.type() == Symbol::Type::kIntArray && Recognition::is_integer(identity.extra().at(1)) && std::stoi(identity.extra().at(1)) >= identity_symbol.int_array().size()) ||
+                       (identity_symbol.type() == Symbol::Type::kRealArray && Recognition::is_integer(identity.extra().at(1)) && std::stoi(identity.extra().at(1)) >= identity_symbol.real_array().size())) {
                 add_error_messages(identity.position(), "变量 \"" + identity.content() + "\" 的数组下标越界, 超过定义大小");
                 throw scope_critical_error();
             }
