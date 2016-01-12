@@ -13,7 +13,7 @@ public:
         kArgIntegerArray,                // argia a
         kArgReal,                        // argr a
         kArgRealArray,                   // argra a
-        kReturn,                         // ret a || ret 5
+        kReturn,                         // ret
         kEndFunc,                        // ENDFUNC
         kCall,                           // $sum
 

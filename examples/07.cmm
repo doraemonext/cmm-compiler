@@ -1,0 +1,6 @@
+func int main()
+{
+    int[5] a;
+    a[5] = 10;
+    return 0;
+}

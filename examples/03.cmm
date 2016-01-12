@@ -1,0 +1,6 @@
+func int main()
+{
+    int b;
+    write(b);
+    return 0;
+}

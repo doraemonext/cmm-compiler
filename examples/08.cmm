@@ -1,0 +1,13 @@
+func int main()
+{
+    int a;
+    a = 10;
+    write(a);
+    if (a == 10) {
+        int a;
+        a = 5;
+        write(a);
+    }
+    write(a);
+    return 0;
+}

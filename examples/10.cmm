@@ -1,0 +1,23 @@
+func int main()
+{
+    int a;
+
+    a = 2 * (4 + 1);
+    if (a <> 10) {
+        write(0);
+    } else {
+        write(1);
+    }
+
+    real b;
+    b = 4.1;
+    write(b);
+
+    int x;
+    x = 60 * 60 * 24 ;
+    int y;
+    y = 60 * 60 ;
+    write(x / y);
+
+    return 0;
+}
