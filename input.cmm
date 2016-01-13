@@ -1,18 +1,13 @@
-func int factor(int x)
-{
-    if (x == 0) {
-        return 0;
-    } else {
-        return factor(x - 1) + x;
-    }
-}
-
 func int main()
 {
     int a;
-
-    a = factor(100);
+    a = 10;
     write(a);
-
+    if (a == 10) {
+        int a;
+        a = 5;
+        write(a);
+    }
+    write(a);
     return 0;
 }

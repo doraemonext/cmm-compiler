@@ -1,3 +1,4 @@
+#include <iostream>
 #include "include/parser.h"
 
 Parser::Parser(const Lexer &lexer, const int &total) {
@@ -26,6 +27,7 @@ void Parser::consume() {
             throw parser_exception(lookahead_[index_].position(), "未闭合的注释块");
         }
     }
+    // std::cout << "Lexer: " << lookahead_[index_].type_name() << std::endl;
     index_ = (index_ + 1) % total_;
 }
 
